@@ -90,8 +90,8 @@ const fetchAdminProfile = async () => {
       id: "orders",
       subMenu: [
         { name: "Pending Orders", path: "/admin/orders/pending" },
-        { name: "Delivered Orders", path: "/admin/orders/delivered" },
-        { name: "Cancelled", path: "/admin/orders/cancelled" },
+        { name: "Shipped Orders", path: "/admin/orders/shipped" },
+        { name: "Manage Order", path: "/admin/orders/manage-order" },
       ],
     },
     {
@@ -100,8 +100,8 @@ const fetchAdminProfile = async () => {
       isDropdown: true,
       id: "products",
       subMenu: [
-        { name: "Manage Products", path: "/admin/products" },
-        { name: "Add Product", path: "/admin/products/add" },
+        { name: "Manage Products", path: "/admin/products/manage-products" },
+        { name: "Add Product", path: "/admin/products/add-product" },
       ],
     },
     {
