@@ -20,6 +20,10 @@ import {
   Home,
   PlusCircle,
   List,
+  ShieldCheck,
+  HelpCircle,
+  Zap,
+  UserCircle,
 } from "lucide-react";
 
 const AdminLayout = ({ children }) => {
@@ -81,7 +85,7 @@ const fetchAdminProfile = async () => {
     router.push("/admin/login");
   };
 
-  const menuItems = [
+const menuItems = [
     { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin" },
     {
       name: "Orders",
@@ -109,8 +113,19 @@ const fetchAdminProfile = async () => {
       icon: <Layers size={20} />,
       path: "/admin/categories",
     },
-    { name: "Customers", icon: <Users size={20} />, path: "/admin/customers" },
-    { name: "Settings", icon: <Settings size={20} />, path: "/admin/settings" },
+    {
+      name: "Marketing",
+      icon: <Zap size={20} />,
+      isDropdown: true,
+      id: "marketing",
+      subMenu: [
+        { name: "Coupons", path: "/admin/coupons" },
+        { name: "Banners", path: "/admin/banners" },
+      ],
+    },
+    { name: "Manage Admins", icon: <ShieldCheck size={20} />, path: "/admin/users" },
+    { name: "FAQs", icon: <HelpCircle size={20} />, path: "/admin/faqs" },
+    { name: "My Profile", icon: <UserCircle size={20} />, path: "/admin/profile" },
   ];
 
   if (isLoading && pathname !== "/admin/login") {
