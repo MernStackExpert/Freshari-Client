@@ -28,14 +28,15 @@ const Footer = () => {
             </p>
             <div className="flex items-center gap-4">
               {[
-                { Icon: FaFacebookF, link: "#" },
-                { Icon: FaInstagram, link: "#" },
-                { Icon: FaYoutube, link: "#" },
-                { Icon: FaTwitter, link: "#" }
+                { Icon: FaFacebookF, link: "https://www.facebook.com/share/18Xjn8W7Bn/" },
+                // { Icon: FaInstagram, link: "#" },
+                // { Icon: FaYoutube, link: "#" },
+                // { Icon: FaTwitter, link: "#" }
               ].map((item, i) => (
                 <Link 
                   key={i} 
                   href={item.link} 
+                  target="blank"
                   className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#f97316] transition-all group border border-white/5"
                 >
                   <item.Icon className="text-lg transition-transform group-hover:scale-110" />
@@ -91,13 +92,13 @@ const Footer = () => {
                 <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-[#f97316]/20 transition-colors">
                    <FaPhoneAlt className="text-[#f97316] text-xs" />
                 </div>
-                <span>+880 1700 000000</span>
+                <span>+880 1724383623</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-300 group">
                 <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-[#f97316]/20 transition-colors">
                    <FaMapMarkerAlt className="text-[#f97316] text-xs" />
                 </div>
-                <span>ইউসুফপুর, রাজশাহী, বাংলাদেশ</span>
+                <span>খড়কি পীর বাড়ি, যশোর, বাংলাদেশ</span>
               </div>
             </div>
           </div>

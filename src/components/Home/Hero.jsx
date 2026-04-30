@@ -59,7 +59,7 @@ const Hero = () => {
                       priority
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex flex-col justify-center px-8 md:px-16">
+                    <div className="absolute inset-0  to-transparent flex flex-col justify-center px-8 md:px-16">
                       <motion.h2 
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -67,11 +67,7 @@ const Hero = () => {
                       >
                         {banner.title}
                       </motion.h2>
-                      <div className="mt-6">
-                        <span className="bg-[#16a34a] text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-[#15803d] transition-all inline-block">
-                          অর্ডার করুন
-                        </span>
-                      </div>
+                      
                     </div>
                   </Link>
                 </SwiperSlide>

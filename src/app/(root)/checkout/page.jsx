@@ -18,7 +18,7 @@ const CheckoutPage = () => {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
-    email: "", // এখন এটি অপশনাল
+    email: "", 
     whatsapp: "",
     postCode: "",
     address: "",
@@ -33,12 +33,12 @@ const CheckoutPage = () => {
   }, 0) || 0;
 
   const calculateDeliveryCharge = () => {
-    if (subTotal >= 4990) return 0;
-    if (!cart || cart.length === 0) return 60;
+    if (subTotal >= 1000) return 0;
+    if (!cart || cart.length === 0) return 40;
     const maxCharge = cart.reduce((max, item) => {
       const charge = Number(item.shipping?.deliveryCharge || 0);
       return charge > max ? charge : max;
-    }, 60);
+    }, 40);
     return maxCharge;
   };
 
@@ -118,8 +118,6 @@ const handlePlaceOrder = async () => {
 
     const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/orders`, orderData);
     
-    // আপনার ব্যাকএন্ড res.status(201).send({ message: "...", orderId: result.insertedId }) পাঠাচ্ছে
-    // তাই আমরা res.data.orderId চেক করব
     if (res.status === 201 && res.data) {
       toast.success("অর্ডার সফল হয়েছে!");
       
@@ -131,16 +129,12 @@ const handlePlaceOrder = async () => {
         setCart([]); 
       }
 
-      // অর্ডার আইডি থাকলে সেটি দিন, না থাকলে 'success'
       const idForUrl = res.data.orderId || 'success';
       
-      // রিডাইরেক্ট করার আগে সামান্য ডিলে দেওয়া ভালো যাতে স্টেট আপডেট হওয়ার সময় পায়
       router.push(`/thank-you?orderId=${idForUrl}`);
     }
   } catch (error) {
     console.error("Order Error:", error);
-    // যদি অর্ডার ব্যাকএন্ডে সেভ হয়ে যায় কিন্তু নেটওয়ার্ক এরর দেখায়, 
-    // তবে এই এরর মেসেজটি ইউজারকে কনফিউজ করতে পারে।
     toast.error(error.response?.data?.message || "অর্ডার করতে সমস্যা হয়েছে, আবার চেষ্টা করুন");
   } finally {
     setIsOrdering(false);

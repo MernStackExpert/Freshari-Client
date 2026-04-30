@@ -68,7 +68,7 @@ const TopCategories = () => {
             {topCategories.map((cat) => (
               <SwiperSlide key={cat._id}>
                 <Link 
-                  href={`/category/${cat.slug}`} 
+                  href={`/product/shop?category=${cat.slug}`} 
                   className="flex flex-col items-center group cursor-pointer"
                 >
                   <div className="w-full aspect-square bg-white rounded-[1.5rem] md:rounded-[2rem] border border-gray-100 shadow-sm flex items-center justify-center p-4 md:p-6 transition-all duration-300 group-hover:shadow-md group-hover:border-[#16a34a]/30 group-hover:-translate-y-1">
