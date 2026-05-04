@@ -218,7 +218,7 @@ const AboutPage = () => {
             যেকোনো প্রশ্ন, পরামর্শ বা অংশীদারিত্বের জন্য আমরা সবসময় প্রস্তুত।
           </p>
           
-          <button className="btn btn-lg bg-white hover:bg-base-100 text-primary border-0 px-16 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transition-all">
+          <button className="btn btn-lg bg-white hover:bg-base-100 text-primary border-0 px-16 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transition-all cursor-pointer">
             যোগাযোগ করুন
           </button>
         </motion.div>
