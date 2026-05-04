@@ -2,7 +2,15 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Lock, Mail, Eye, EyeOff, Loader2, ArrowRight, Leaf } from "lucide-react";
+import {
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
+  Loader2,
+  ArrowRight,
+  Leaf,
+} from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
@@ -25,13 +33,18 @@ const AdminLoginPage = () => {
       const res = await axiosInstance.post("/admins/login", formData);
       if (res.status === 200) {
         Cookies.set("freshari_admin_token", res.data.token, { expires: 7 });
-        Cookies.set("admin_user", JSON.stringify(res.data.user), { expires: 7 });
+        Cookies.set("admin_user", JSON.stringify(res.data.user), {
+          expires: 7,
+        });
         toast.success("Welcome Back to Freshari!");
         router.push("/admin");
         router.refresh();
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed! Please check credentials.");
+      toast.error(
+        error.response?.data?.message ||
+          "Login failed! Please check credentials.",
+      );
     } finally {
       setLoading(false);
     }
@@ -42,7 +55,7 @@ const AdminLoginPage = () => {
       <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-[#22C55E]/10 rounded-full blur-[120px]"></div>
       <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#22C55E]/10 rounded-full blur-[120px]"></div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -50,45 +63,55 @@ const AdminLoginPage = () => {
       >
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center p-5 bg-white/5 rounded-3xl mb-6 border border-white/10 shadow-inner">
-            <img src="/freshari.png" alt="Freshari" className="w-12 h-12 object-contain" />
+            <img
+              src="/astha-logo.png"
+              alt="Freshari"
+              className="w-12 h-12 object-contain"
+            />
           </div>
           <h1 className="text-3xl font-black text-white tracking-tighter uppercase mb-2">
             FRESHARI <span className="text-[#22C55E]">ADMIN</span>
           </h1>
-          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.4em]">Secure Authentication Gateway</p>
+          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.4em]">
+            Secure Authentication Gateway
+          </p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-gray-500 ml-1 tracking-widest">Administrator Email</label>
+            <label className="text-[10px] font-black uppercase text-gray-500 ml-1 tracking-widest">
+              Administrator Email
+            </label>
             <div className="relative group">
-              <input 
+              <input
                 required
                 name="email"
-                type="email" 
+                type="email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="admin@freshari.com"
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4.5 px-6 pl-14 text-sm text-white placeholder:text-gray-600 focus:border-[#22C55E] focus:bg-white/10 outline-none transition-all duration-300" 
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4.5 px-6 pl-14 text-sm text-white placeholder:text-gray-600 focus:border-[#22C55E] focus:bg-white/10 outline-none transition-all duration-300"
               />
               <Mail className="absolute left-5 top-4.5 text-gray-500 group-focus-within:text-[#22C55E] transition-colors w-5 h-5" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-gray-500 ml-1 tracking-widest">Master Password</label>
+            <label className="text-[10px] font-black uppercase text-gray-500 ml-1 tracking-widest">
+              Master Password
+            </label>
             <div className="relative group">
-              <input 
+              <input
                 required
                 name="password"
-                type={showPassword ? "text" : "password"} 
+                type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4.5 px-6 pl-14 pr-14 text-sm text-white placeholder:text-gray-600 focus:border-[#22C55E] focus:bg-white/10 outline-none transition-all duration-300" 
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4.5 px-6 pl-14 pr-14 text-sm text-white placeholder:text-gray-600 focus:border-[#22C55E] focus:bg-white/10 outline-none transition-all duration-300"
               />
               <Lock className="absolute left-5 top-4.5 text-gray-500 group-focus-within:text-[#22C55E] transition-colors w-5 h-5" />
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-5 top-4.5 text-gray-500 hover:text-white transition-colors"
@@ -99,12 +122,18 @@ const AdminLoginPage = () => {
           </div>
 
           <div className="pt-4">
-            <button 
+            <button
               disabled={loading}
-              type="submit" 
+              type="submit"
               className="w-full bg-[#22C55E] text-[#062010] py-5 rounded-2xl font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#1eb054] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-[0_15px_30px_rgba(34,197,94,0.2)] disabled:opacity-70 disabled:hover:scale-100"
             >
-              {loading ? <Loader2 className="animate-spin" /> : <>Access Dashboard <ArrowRight size={20} /></>}
+              {loading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <>
+                  Access Dashboard <ArrowRight size={20} />
+                </>
+              )}
             </button>
           </div>
         </form>

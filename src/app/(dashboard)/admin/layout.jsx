@@ -63,18 +63,18 @@ const AdminLayout = ({ children }) => {
     }
   };
 
-const fetchAdminProfile = async () => {
-  try {
-    const res = await axiosInstance.get("/admins/profile");
-    setAdminProfile(res.data);
-  } catch (error) {
-    console.error("Profile fetch failed:", error);
-    
-    if (error.response?.status === 403) {
-       handleLogout();
+  const fetchAdminProfile = async () => {
+    try {
+      const res = await axiosInstance.get("/admins/profile");
+      setAdminProfile(res.data);
+    } catch (error) {
+      console.error("Profile fetch failed:", error);
+
+      if (error.response?.status === 403) {
+        handleLogout();
+      }
     }
-  }
-};
+  };
   const toggleMenu = (menuName) => {
     setOpenMenus((prev) => ({ ...prev, [menuName]: !prev[menuName] }));
   };
@@ -85,7 +85,7 @@ const fetchAdminProfile = async () => {
     router.push("/admin/login");
   };
 
-const menuItems = [
+  const menuItems = [
     { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin" },
     {
       name: "Orders",
@@ -123,9 +123,17 @@ const menuItems = [
         { name: "Banners", path: "/admin/banners" },
       ],
     },
-    { name: "Manage Admins", icon: <ShieldCheck size={20} />, path: "/admin/users" },
+    {
+      name: "Manage Admins",
+      icon: <ShieldCheck size={20} />,
+      path: "/admin/users",
+    },
     { name: "FAQs", icon: <HelpCircle size={20} />, path: "/admin/faqs" },
-    { name: "My Profile", icon: <UserCircle size={20} />, path: "/admin/profile" },
+    {
+      name: "My Profile",
+      icon: <UserCircle size={20} />,
+      path: "/admin/profile",
+    },
   ];
 
   if (isLoading && pathname !== "/admin/login") {
@@ -155,7 +163,7 @@ const menuItems = [
       >
         <div className="p-8 flex items-center gap-3">
           <img
-            src="/freshari.png"
+            src="/astha-logo.png"
             alt="Logo"
             className="w-10 h-10 object-contain"
           />

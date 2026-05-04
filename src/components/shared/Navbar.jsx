@@ -1,248 +1,237 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
-import {
-  Search,
-  ShoppingCart,
-  Menu,
-  X,
-  ChevronRight,
-  Home,
-  LayoutGrid,
-  Info,
-  Headset,
-  House,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import axios from "axios";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useCart } from "@/context/CartContext";
-import CartDrawer from "../Home/CartDrawer";
-import Searchbar from "./Searchbar";
+import { Truck, Search, User, ShoppingCart, ChevronDown, Home, LayoutGrid, Menu, X } from "lucide-react";
 
-const Navbar = () => {
-  const [isCartOpen, setIsCartOpen] = useState(false);
+export default function Navbar() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { cart } = useCart();
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const activeCategory = searchParams.get("category");
-
-  const cartCount = cart.reduce((t, i) => t + i.quantity, 0);
-  const totalPrice = cart.reduce(
-    (t, i) => t + i.pricing.price * i.quantity,
-    0
-  );
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/categories`
-        );
-        setCategories(res.data);
-      } catch (e) {}
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/categories`);
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Failed to fetch categories");
+      }
     };
     fetchCategories();
   }, []);
 
+  const navLinks = [
+    { title: "Home", url: "/" },
+    { title: "Shop", url: "/shop" },
+    { title: "Categories", url: "/categories", isDropdown: true },
+    { title: "About Us", url: "/about" },
+    { title: "Blog", url: "/blog" },
+    { title: "Contact", url: "/contact" },
+  ];
+
   return (
     <>
-      <header className="w-full font-sans">
-        <div className="hidden md:block bg-white border-b border-gray-100">
-          <div className="main-container py-4 flex items-center justify-between gap-10">
-            <Link href="/" className="shrink-0">
-              <Image
-                src="/freshari.png"
-                alt="Freshari"
-                width={170}
-                height={55}
-                priority
-                className="object-contain"
-              />
-            </Link>
+      <header className="w-full sticky top-0 z-50 shadow-sm bg-white">
+        <div className="bg-[#FF6000] text-white flex justify-center items-center py-2 px-4 text-xs sm:text-sm font-medium">
+          <Truck className="w-4 h-4 mr-2" />
+          <span>ফ্রি ডেলিভারি সারাদেশে! ১৫০০৳ এর বেশি অর্ডারে</span>
+        </div>
 
-            <Searchbar />
-
-            <div className="flex items-center gap-8 shrink-0">
-              <Link href="/">
-                <div className="flex items-center gap-2 cursor-pointer text-[#064e3b] hover:text-[#16a34a]">
-                  <House className="w-5 h-5" />
-                  <span className="text-[13px] font-bold">Home</span>
-                </div>
-              </Link>
-              <Link href="/about">
-                <div className="flex items-center gap-2 cursor-pointer text-[#064e3b] hover:text-[#16a34a]">
-                  <Info className="w-5 h-5" />
-                  <span className="text-[13px] font-bold">About</span>
-                </div>
-              </Link>
-              <Link href="/support">
-                <div className="flex items-center gap-2 cursor-pointer text-[#064e3b] hover:text-[#16a34a]">
-                  <Headset className="w-5 h-5" />
-                  <span className="text-[13px] font-bold">Support</span>
-                </div>
-              </Link>
-
-              <div
-                onClick={() => setIsCartOpen(true)}
-                className="flex items-center gap-3 cursor-pointer"
+        <div className="main-container">
+          <div className="flex justify-between items-center py-4">
+            
+            <div className="flex items-center gap-3">
+              <button
+                className="md:hidden text-gray-800 hover:text-[#FF6000] transition-colors"
+                onClick={() => setIsSidebarOpen(true)}
               >
-                <div className="relative bg-[#f0fdf4] p-2 rounded-full">
-                  <ShoppingCart className="w-5 h-5 text-[#16a34a]" />
-                  <span className="absolute -top-1.5 -right-1.5 bg-[#16a34a] text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black border-2 border-white">
-                    {cartCount}
-                  </span>
-                </div>
-                <span className="text-[14px] font-black text-[#064e3b]">
-                  ৳ {totalPrice.toLocaleString()}
-                </span>
-              </div>
+                <Menu className="w-6 h-6" />
+              </button>
+              
+              <Link href="/" className="flex-shrink-0">
+                <Image
+                  src="/astha-logo.png"
+                  alt="Aastha Shop Logo"
+                  width={160}
+                  height={45}
+                  className="h-8 md:h-10 w-auto"
+                  priority
+                />
+              </Link>
             </div>
-          </div>
-        </div>
 
-        <div className="hidden md:block bg-[#1a8f70d2] shadow-xl">
-          <div className="main-container mx-auto px-4">
-            <ul className="flex items-center overflow-x-auto no-scrollbar">
-              {categories?.map((cat) => (
-                <li key={cat._id}>
-                  <Link
-                    href={`/product/shop?category=${cat.slug}`}
-                    className={`text-[14px] font-bold whitespace-nowrap px-6 py-4 inline-block ${
-                      activeCategory === cat.slug
-                        ? "bg-[#16a34a] text-white"
-                        : "text-white/90 hover:bg-[#458c5f]"
-                    }`}
-                  >
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+            <nav className="hidden md:flex space-x-6 lg:space-x-8 items-center font-semibold text-sm lg:text-base">
+              {navLinks.map((link, index) => {
+                const isActive = pathname === link.url;
+                return (
+                  <div key={index}>
+                    {link.isDropdown ? (
+                      <div className="relative group flex items-center cursor-pointer hover:text-[#FF6000] transition-colors h-10">
+                        <span className={pathname.includes(link.url) ? "text-[#FF6000]" : "text-gray-800"}>
+                          {link.title}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 ml-1 ${pathname.includes(link.url) ? "text-[#FF6000]" : "text-gray-800"} group-hover:text-[#FF6000]`} />
+                        
+                        <div className="absolute top-full left-0 bg-white shadow-lg rounded-md w-56 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border border-gray-100">
+                          {categories.length > 0 ? (
+                            categories.map((cat) => (
+                              <Link
+                                key={cat._id}
+                                href={`/categories/${cat.slug}`}
+                                className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#FF6000] transition-colors"
+                              >
+                                {cat.name}
+                              </Link>
+                            ))
+                          ) : (
+                            <div className="px-4 py-2 text-sm text-gray-500">Loading...</div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <Link
+                        href={link.url}
+                        className={`transition-colors h-10 flex items-center ${isActive ? "text-[#FF6000]" : "text-gray-800 hover:text-[#FF6000]"}`}
+                      >
+                        {link.title}
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
 
-        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100">
-          <button
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2 bg-[#f3f4f6] rounded-lg"
-          >
-            <Menu className="w-6 h-6 text-[#064e3b]" />
-          </button>
-
-          <Link href="/">
-            <Image src="/freshari.png" alt="Logo" width={110} height={35} />
-          </Link>
-
-          <div
-            onClick={() => setIsCartOpen(true)}
-            className="relative p-2 bg-[#f0fdf4] rounded-full"
-          >
-            <ShoppingCart className="w-6 h-6 text-[#16a34a]" />
-            <span className="absolute -top-1 -right-1 bg-[#16a34a] text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
-              {cartCount}
-            </span>
+            <div className="flex items-center space-x-5 text-gray-800">
+              <button className="hover:text-[#FF6000] transition-colors hidden sm:block">
+                <Search className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
+              <button className="hover:text-[#FF6000] transition-colors hidden sm:block">
+                <User className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
+              <Link href="/cart" className="relative transition-colors">
+                <ShoppingCart className={`w-6 h-6 md:w-7 md:h-7 ${pathname === "/cart" ? "text-[#FF6000]" : "hover:text-[#FF6000]"}`} />
+                <span className="absolute -top-2 -right-2 bg-[#FF6000] text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 rounded-full border border-white">
+                  1
+                </span>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
 
+      <div
+        className={`fixed inset-0 z-[60] bg-[#ffffff7b] backdrop-blur-sm transition-opacity duration-300 ${
+          isSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+        onClick={() => setIsSidebarOpen(false)}
+      ></div>
 
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/60 z-[2000]"
-            />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ duration: 0.3 }}
-              className="fixed top-0 left-0 h-full w-[280px] bg-white z-[2001] flex flex-col"
-            >
-              <div className="p-5 bg-[#064e3b] flex justify-between text-white">
-                <span className="font-black text-sm">Freshari</span>
-                <button onClick={() => setIsMobileMenuOpen(false)}>
-                  <X />
-                </button>
-              </div>
-
-              <div className="p-4 flex flex-col gap-2">
-                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl font-bold bg-[#16a34a] text-white">
-                  Home
-                </Link>
-                <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl font-bold bg-white border">
-                  About
-                </Link>
-                <Link href="/support" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl font-bold bg-white border">
-                  Support
-                </Link>
-
-                <Link
-                  href="/product/shop"
-                  className="px-4 py-3 rounded-xl font-bold bg-white border"
-                >
-                  All Products
-                </Link>
-
-                {categories?.map((cat) => (
-                  <Link
-                    key={cat._id}
-                    href={`/product/shop?category=${cat.slug}`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex justify-between px-4 py-3 rounded-xl font-bold bg-white border"
-                  >
-                    {cat.name}
-                    <ChevronRight />
-                  </Link>
-                ))}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t py-2 px-6 flex justify-between z-[1500]">
-        <Link href="/" className="flex flex-col items-center">
-          <Home className={`w-6 h-6 ${pathname === "/" ? "text-[#16a34a]" : "text-gray-400"}`} />
-          <span className="text-[10px] font-bold">Home</span>
-        </Link>
-
-        <button onClick={() => setIsMobileMenuOpen(true)} className="flex flex-col items-center">
-          <Menu className="w-6 h-6 text-gray-400" />
-          <span className="text-[10px] font-bold">Menu</span>
-        </button>
-
-        <Link href="/product/shop" className="flex flex-col items-center">
-          <LayoutGrid className="w-6 h-6 text-gray-400" />
-          <span className="text-[10px] font-bold">Shop</span>
-        </Link>
-
-        <div onClick={() => setIsCartOpen(true)} className="flex flex-col items-center relative">
-          <ShoppingCart className="w-6 h-6 text-gray-400" />
-          <span className="absolute -top-1 right-0 bg-[#16a34a] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
-            {cartCount}
-          </span>
-          <span className="text-[10px] font-bold">Cart</span>
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-white z-[70] transform transition-transform duration-300 flex flex-col shadow-2xl ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex justify-between items-center p-4 border-b border-gray-100">
+          <Image
+            src="/astha-logo.png"
+            alt="Aastha Shop Logo"
+            width={120}
+            height={35}
+            className="h-8 w-auto"
+          />
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="text-gray-600 hover:text-[#FF6000] transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
-
-        <button onClick={() => router.push("/product/shop")} className="flex flex-col items-center">
-          <Search className="w-6 h-6 text-gray-400" />
-          <span className="text-[10px] font-bold">Search</span>
-        </button>
+        <div className="flex flex-col p-4 space-y-4 font-medium">
+          {navLinks.map((link, index) => {
+            const isActive = pathname === link.url;
+            return (
+              <Link
+                key={index}
+                href={link.url}
+                className={`transition-colors ${isActive ? "text-[#FF6000]" : "text-gray-800 hover:text-[#FF6000]"}`}
+                onClick={() => setIsSidebarOpen(false)}
+              >
+                {link.title}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
-      <CartDrawer isOpen={isCartOpen} setIsOpen={setIsCartOpen} />
+      <div
+        className={`fixed inset-0 z-[75] bg-[#ffffff7b] backdrop-blur-sm transition-opacity duration-300 ${
+          isCategoryModalOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+        onClick={() => setIsCategoryModalOpen(false)}
+      ></div>
+
+      <div
+        className={`fixed top-0 left-0 right-0 bg-white z-[80] transform transition-transform duration-300 rounded-b-2xl shadow-xl border-b border-gray-100 ${
+          isCategoryModalOpen ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
+        <div className="flex justify-between items-center p-4 border-b border-gray-100">
+          <span className="font-bold text-gray-800">All Categories</span>
+          <button
+            onClick={() => setIsCategoryModalOpen(false)}
+            className="text-gray-600 hover:text-[#FF6000] bg-gray-50 rounded-full p-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-4 max-h-[60vh] overflow-y-auto">
+          <div className="grid grid-cols-2 gap-3">
+            {categories.length > 0 ? (
+              categories.map((cat) => (
+                <Link
+                  key={cat._id}
+                  href={`/categories/${cat.slug}`}
+                  onClick={() => setIsCategoryModalOpen(false)}
+                  className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-[#FF6000]/10 hover:text-[#FF6000] transition-colors border border-transparent hover:border-[#FF6000]/20"
+                >
+                  <span className="text-sm font-medium">{cat.name}</span>
+                </Link>
+              ))
+            ) : (
+              <div className="col-span-2 text-center text-sm text-gray-500 py-4">Loading categories...</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-50 border-t border-gray-100 pb-safe">
+        <div className="flex justify-around items-center py-3">
+          <Link href="/" className={`flex flex-col items-center transition-colors ${pathname === "/" ? "text-[#FF6000]" : "text-gray-600 hover:text-[#FF6000]"}`}>
+            <Home className="w-5 h-5" />
+            <span className="text-[10px] mt-1 font-semibold">Home</span>
+          </Link>
+          <Link href="/shop" className={`flex flex-col items-center transition-colors ${pathname === "/shop" ? "text-[#FF6000]" : "text-gray-600 hover:text-[#FF6000]"}`}>
+            <LayoutGrid className="w-5 h-5" />
+            <span className="text-[10px] mt-1 font-semibold">Shop</span>
+          </Link>
+          <button 
+            onClick={() => setIsCategoryModalOpen(true)}
+            className={`flex flex-col items-center transition-colors ${isCategoryModalOpen || pathname.includes("/categories") ? "text-[#FF6000]" : "text-gray-600 hover:text-[#FF6000]"}`}
+          >
+            <Menu className="w-5 h-5" />
+            <span className="text-[10px] mt-1 font-semibold">Categories</span>
+          </button>
+          <button className={`flex flex-col items-center transition-colors ${pathname === "/search" ? "text-[#FF6000]" : "text-gray-600 hover:text-[#FF6000]"}`}>
+            <Search className="w-5 h-5" />
+            <span className="text-[10px] mt-1 font-semibold">Search</span>
+          </button>
+        </div>
+      </div>
     </>
   );
-};
-
-export default Navbar;
+}
