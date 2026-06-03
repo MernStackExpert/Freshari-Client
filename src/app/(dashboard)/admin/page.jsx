@@ -103,7 +103,7 @@ const DashboardPage = () => {
     <div className="space-y-10 pb-10">
       <div>
         <h1 className="text-3xl font-black text-[#062010] tracking-tighter uppercase">
-          Freshari Insights
+          Arshe-Mart Insights
         </h1>
         <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.3em] mt-1">
           Live Database Statistics

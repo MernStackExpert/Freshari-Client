@@ -37,7 +37,7 @@ const AdminLayout = ({ children }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = Cookies.get("freshari_admin_token");
+    const token = Cookies.get("Arshe-Mart_admin_token");
     const userJson = Cookies.get("admin_user");
 
     if (pathname === "/admin/login") {
@@ -63,29 +63,29 @@ const AdminLayout = ({ children }) => {
     }
   };
 
-const fetchAdminProfile = async () => {
-  try {
-    const res = await axiosInstance.get("/admins/profile");
-    setAdminProfile(res.data);
-  } catch (error) {
-    console.error("Profile fetch failed:", error);
-    
-    if (error.response?.status === 403) {
-       handleLogout();
+  const fetchAdminProfile = async () => {
+    try {
+      const res = await axiosInstance.get("/admins/profile");
+      setAdminProfile(res.data);
+    } catch (error) {
+      console.error("Profile fetch failed:", error);
+
+      if (error.response?.status === 403) {
+        handleLogout();
+      }
     }
-  }
-};
+  };
   const toggleMenu = (menuName) => {
     setOpenMenus((prev) => ({ ...prev, [menuName]: !prev[menuName] }));
   };
 
   const handleLogout = () => {
-    Cookies.remove("freshari_admin_token");
+    Cookies.remove("Arshe-Mart_admin_token");
     Cookies.remove("admin_user");
     router.push("/admin/login");
   };
 
-const menuItems = [
+  const menuItems = [
     { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin" },
     {
       name: "Orders",
@@ -123,9 +123,17 @@ const menuItems = [
         { name: "Banners", path: "/admin/banners" },
       ],
     },
-    { name: "Manage Admins", icon: <ShieldCheck size={20} />, path: "/admin/users" },
+    {
+      name: "Manage Admins",
+      icon: <ShieldCheck size={20} />,
+      path: "/admin/users",
+    },
     { name: "FAQs", icon: <HelpCircle size={20} />, path: "/admin/faqs" },
-    { name: "My Profile", icon: <UserCircle size={20} />, path: "/admin/profile" },
+    {
+      name: "My Profile",
+      icon: <UserCircle size={20} />,
+      path: "/admin/profile",
+    },
   ];
 
   if (isLoading && pathname !== "/admin/login") {
@@ -133,7 +141,7 @@ const menuItems = [
       <div className="min-h-screen bg-[#062010] flex flex-col items-center justify-center text-white">
         <Loader2 className="animate-spin mb-4 text-[#22C55E]" size={40} />
         <p className="text-xs font-black uppercase tracking-[0.3em] opacity-60">
-          Authenticating Freshari Admin...
+          Authenticating Arshe-Mart Admin...
         </p>
       </div>
     );
@@ -155,7 +163,7 @@ const menuItems = [
       >
         <div className="p-8 flex items-center gap-3">
           <img
-            src="/freshari.png"
+            src="/Arshe-Mart.png"
             alt="Logo"
             className="w-10 h-10 object-contain"
           />
@@ -163,7 +171,7 @@ const menuItems = [
             href="/admin"
             className="text-xl font-black tracking-tighter uppercase"
           >
-            FRESHARI <span className="text-[#22C55E]">PANEL</span>
+            Arshe-Mart <span className="text-[#22C55E]">PANEL</span>
           </Link>
         </div>
 

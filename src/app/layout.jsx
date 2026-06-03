@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Freshari | তাজা সবজি সরাসরি কৃষকের হাত থেকে",
+  title: "Arshe-Mart | তাজা সবজি সরাসরি কৃষকের হাত থেকে",
   description:
-    "Freshari provides organic and fresh vegetables directly from farms in Bangladesh.",
+    "Arshe-Mart provides organic and fresh vegetables directly from farms in Bangladesh.",
 };
 
 export default function RootLayout({ children }) {

@@ -128,7 +128,7 @@ const PendingOrdersPage = () => {
             Pending Orders
           </h1>
           <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mt-1">
-            Manage incoming freshari orders
+            Manage incoming Arshe-Mart orders
           </p>
         </div>
 

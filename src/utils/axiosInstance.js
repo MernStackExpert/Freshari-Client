@@ -10,8 +10,8 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = Cookies.get("freshari_admin_token");
-    
+    const token = Cookies.get("Arshe-Mart_admin_token");
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -19,22 +19,28 @@ axiosInstance.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      Cookies.remove("freshari_admin_token");
+    if (
+      error.response &&
+      (error.response.status === 401 || error.response.status === 403)
+    ) {
+      Cookies.remove("Arshe-Mart_admin_token");
       Cookies.remove("admin_user");
-      
-      if (typeof window !== "undefined" && !window.location.pathname.includes("/admin/login")) {
+
+      if (
+        typeof window !== "undefined" &&
+        !window.location.pathname.includes("/admin/login")
+      ) {
         window.location.href = "/admin/login";
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInstance;

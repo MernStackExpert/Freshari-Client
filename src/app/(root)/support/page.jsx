@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 
 const slides = [
-  "24/7 Customer Support for Freshari",
+  "24/7 Customer Support for Arshe-Mart",
   "Fast Response & Trusted Service",
   "We Are Always Here To Help You",
 ];
@@ -33,7 +33,7 @@ const SupportPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-white text-3xl md:text-5xl font-black text-center"
         >
-          Freshari Support
+          Arshe-Mart Support
         </motion.h1>
       </div>
 
@@ -69,9 +69,7 @@ const SupportPage = () => {
             <div className="space-y-5">
               <div className="flex items-center gap-4">
                 <FaPhoneAlt className="text-[#16a34a] text-xl" />
-                <span className="font-semibold text-gray-700">
-                  01724383623
-                </span>
+                <span className="font-semibold text-gray-700">01724383623</span>
               </div>
 
               <div className="flex items-center gap-4">
@@ -88,7 +86,7 @@ const SupportPage = () => {
               <div className="flex items-center gap-4">
                 <FaEnvelope className="text-[#16a34a] text-xl" />
                 <span className="font-semibold text-gray-700">
-                  freshari.shop@gmail.com
+                  Arshe-Mart.shop@gmail.com
                 </span>
               </div>
 
