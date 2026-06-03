@@ -126,32 +126,69 @@ const DesktopTopNav = ({ cartCount, totalPrice, setIsCartOpen }) => (
   </div>
 );
 
-const DesktopCategoryNav = ({ categories }) => {
+const DesktopCategoryNav = ({
+  categories,
+  cartCount,
+  totalPrice,
+  setIsCartOpen,
+}) => {
   const searchParams = useSearchParams();
   const activeCategory = searchParams.get("category");
+  const [isSticky, setIsSticky] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setIsSticky(true);
+      } else {
+        setIsSticky(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <div className="hidden md:block sticky top-0 z-40 bg-[#064e3b] shadow-lg">
-      <div className="main-container mx-auto px-4">
-        <ul className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
-          {categories?.map((cat) => {
-            const isActive = activeCategory === cat.slug;
-            return (
-              <li key={cat._id} className="shrink-0">
-                <Link
-                  href={`/product/shop?category=${cat.slug}`}
-                  className={`relative text-[14px] font-bold px-6 py-3 rounded-xl inline-block transition-all duration-300 overflow-hidden group ${
-                    isActive
-                      ? "text-[#064e3b] bg-[#f0fdf4] shadow-md"
-                      : "text-white/90 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  <span className="relative z-10">{cat.name}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+    <div className="hidden md:block sticky top-0 z-[1000] w-full bg-[#064e3b] shadow-lg">
+      <div className="main-container mx-auto px-4 flex items-center justify-between gap-4">
+        <div className="flex-grow overflow-x-auto no-scrollbar">
+          <ul className="flex items-center gap-2 py-2">
+            {categories?.map((cat) => {
+              const isActive = activeCategory === cat.slug;
+              return (
+                <li key={cat._id} className="shrink-0">
+                  <Link
+                    href={`/product/shop?category=${cat.slug}`}
+                    className={`relative text-[14px] font-bold px-6 py-3 rounded-xl inline-block transition-all duration-300 overflow-hidden group ${
+                      isActive
+                        ? "text-[#064e3b] bg-[#f0fdf4] shadow-md"
+                        : "text-white/90 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <span className="relative z-10">{cat.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {isSticky && (
+          <div
+            onClick={() => setIsCartOpen(true)}
+            className="flex items-center gap-3 cursor-pointer p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-300 shrink-0 text-white animate-in fade-in slide-in-from-right-4 duration-300"
+          >
+            <div className="relative bg-[#f0fdf4] p-2 rounded-lg shadow-sm">
+              <ShoppingCart className="w-4 h-4 text-[#16a34a]" />
+              <span className="absolute -top-1.5 -right-1.5 bg-[#f97316] text-white text-[9px] min-w-[16px] h-[16px] px-0.5 rounded-full flex items-center justify-center font-black border border-white">
+                {cartCount}
+              </span>
+            </div>
+            <span className="text-[13px] font-black whitespace-nowrap">
+              ৳ {totalPrice.toLocaleString()}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -368,13 +405,12 @@ const NavbarContent = () => {
 
   return (
     <>
-      <header className="w-full font-sans relative">
+      <header className="w-full font-sans relative z-50">
         <DesktopTopNav
           cartCount={cartCount}
           totalPrice={totalPrice}
           setIsCartOpen={setIsCartOpen}
         />
-        <DesktopCategoryNav categories={categories} />
         <MobileTopNav
           cartCount={cartCount}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
@@ -382,6 +418,13 @@ const NavbarContent = () => {
         />
         <div className="md:hidden h-[65px] w-full"></div>
       </header>
+
+      <DesktopCategoryNav
+        categories={categories}
+        cartCount={cartCount}
+        totalPrice={totalPrice}
+        setIsCartOpen={setIsCartOpen}
+      />
 
       <MobileSidebar
         isOpen={isMobileMenuOpen}

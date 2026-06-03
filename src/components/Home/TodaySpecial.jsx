@@ -8,16 +8,17 @@ import { useCart } from "@/context/CartContext";
 
 const TodaySpecial = () => {
   const [products, setProducts] = useState([]);
-
-  const { addToCart ,buyNow } = useCart();
+  const { addToCart, buyNow } = useCart();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products`);
-        if (res.data && res.data.products) {
-          const specialOnes = res.data.products
-            .filter(p => p.status.isTodaySpecial)
+        const { data } = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/products`,
+        );
+        if (data?.products) {
+          const specialOnes = data.products
+            .filter((p) => p.status?.isTodaySpecial)
             .slice(0, 4);
           setProducts(specialOnes);
         }
@@ -27,6 +28,8 @@ const TodaySpecial = () => {
     };
     fetchProducts();
   }, []);
+
+  if (products.length === 0) return null;
 
   return (
     <section className="py-10 bg-[#fcfdfd]">
@@ -42,11 +45,14 @@ const TodaySpecial = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6">
           {products.map((product) => {
-            const hasDiscount = product.pricing.oldPrice > product.pricing.price;
-            const saveAmount = hasDiscount ? product.pricing.oldPrice - product.pricing.price : 0;
+            const hasDiscount =
+              product.pricing.oldPrice > product.pricing.price;
+            const saveAmount = hasDiscount
+              ? product.pricing.oldPrice - product.pricing.price
+              : 0;
 
             return (
-              <div 
+              <div
                 key={product._id}
                 className="relative flex flex-col md:flex-row bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group p-2 md:p-5"
               >
@@ -67,7 +73,10 @@ const TodaySpecial = () => {
 
                 <div className="flex-1 flex flex-col justify-between mt-3 md:mt-0 md:ml-6">
                   <div>
-                    <Link href={`/product/${product.slug}`} className="cursor-pointer">
+                    <Link
+                      href={`/product/${product.slug}`}
+                      className="cursor-pointer"
+                    >
                       <h3 className="text-[13px] md:text-[17px] font-bold text-[#064e3b] hover:text-[#16a34a] transition-colors line-clamp-2 md:line-clamp-1 leading-snug">
                         {product.name}
                       </h3>
@@ -95,15 +104,17 @@ const TodaySpecial = () => {
 
                   <div className="mt-4 flex flex-col md:flex-row items-center gap-2">
                     <button
-                    onClick={() => addToCart(product)}
-                     className="w-full md:flex-1 border-[1.5px] border-[#f97316] text-[#f97316] hover:bg-[#f97316] hover:text-white transition-all h-[38px] md:h-[45px] rounded-xl font-bold text-[11px] md:text-[13px] flex items-center justify-center gap-2 group/btn cursor-pointer">
-                      <ShoppingCart className="w-4 h-4 transition-transform group-hover/btn:scale-110" /> 
+                      onClick={() => addToCart(product)}
+                      className="w-full md:flex-1 border-[1.5px] border-[#f97316] text-[#f97316] hover:bg-[#f97316] hover:text-white transition-all h-[38px] md:h-[45px] rounded-xl font-bold text-[11px] md:text-[13px] flex items-center justify-center gap-2 group/btn cursor-pointer"
+                    >
+                      <ShoppingCart className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
                       Add To Cart
                     </button>
-                    
+
                     <button
-                    onClick={() => buyNow(product)}
-                     className="hidden md:flex w-full md:flex-1 bg-[#f97316] text-white h-[45px] rounded-xl font-bold text-[13px] hover:bg-[#ea580c] transition-colors items-center justify-center cursor-pointer">
+                      onClick={() => buyNow(product)}
+                      className="flex w-full md:flex-1 bg-[#f97316] text-white h-[38px] md:h-[45px] rounded-xl font-bold text-[11px] md:text-[13px] hover:bg-[#ea580c] transition-colors items-center justify-center cursor-pointer"
+                    >
                       Buy Now
                     </button>
                   </div>
