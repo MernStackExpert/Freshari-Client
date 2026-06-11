@@ -64,7 +64,7 @@ const AdminLoginPage = () => {
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center p-5 bg-white/5 rounded-3xl mb-6 border border-white/10 shadow-inner">
             <img
-              src="/Arshe-Mart.png"
+              src="/arshemart-main.png"
               alt="Arshe-Mart"
               className="w-12 h-12 object-contain"
             />
