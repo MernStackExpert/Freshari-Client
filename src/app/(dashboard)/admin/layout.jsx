@@ -163,7 +163,7 @@ const AdminLayout = ({ children }) => {
       >
         <div className="p-8 flex items-center gap-3">
           <img
-            src="/arshemart-main.png"
+            src="/arshe-mart-lg.png"
             alt="Logo"
             className="w-10 h-10 object-contain"
           />

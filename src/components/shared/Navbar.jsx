@@ -20,13 +20,15 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import CartDrawer from "../Home/CartDrawer";
 import Searchbar from "./Searchbar";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay } from "swiper/modules";
+import "swiper/css";
 
 const MAIN_LINKS = [
   { id: 1, label: "Home", href: "/", icon: House },
   { id: 2, label: "Shop", href: "/product/shop", icon: LayoutGrid },
-  { id: 2, label: "About", href: "/about", icon: Info },
-  { id: 3, label: "Support", href: "/support", icon: Headset },
-  
+  { id: 3, label: "About", href: "/about", icon: Info },
+  { id: 4, label: "Support", href: "/support", icon: Headset },
 ];
 
 const MOBILE_BOTTOM_LINKS = [
@@ -152,15 +154,30 @@ const DesktopCategoryNav = ({
 
   return (
     <div
-      className={`hidden md:block sticky top-0 z-40 w-full transition-all duration-300 ${isSticky ? "bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100 py-1" : "bg-white border-b border-gray-50"}`}
+      className={`hidden md:block sticky top-0 z-40 w-full transition-all duration-300 ${
+        isSticky
+          ? "bg-white/95 backdrop-blur-md shadow-md border-b border-gray-100 py-1"
+          : "bg-white border-b border-gray-50"
+      }`}
     >
       <div className="main-container mx-auto px-4 flex items-center justify-between gap-6">
-        <div className="flex-grow overflow-x-auto no-scrollbar">
-          <ul className="flex items-center gap-3 py-3">
+        <div className="flex-grow min-w-0 py-3">
+          <Swiper
+            slidesPerView="auto"
+            spaceBetween={12}
+            loop={true}
+            autoplay={{
+              delay: 3000,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            }}
+            modules={[Autoplay]}
+            className="w-full"
+          >
             {categories?.map((cat) => {
               const isActive = activeCategory === cat.slug;
               return (
-                <li key={cat._id} className="shrink-0">
+                <SwiperSlide key={cat._id} className="!w-auto">
                   <Link
                     href={`/product/shop?category=${cat.slug}`}
                     className={`relative text-[13px] font-bold px-5 py-2.5 rounded-full inline-block transition-all duration-300 ${
@@ -173,10 +190,10 @@ const DesktopCategoryNav = ({
                       {cat.name}
                     </span>
                   </Link>
-                </li>
+                </SwiperSlide>
               );
             })}
-          </ul>
+          </Swiper>
         </div>
 
         <AnimatePresence>
@@ -260,14 +277,20 @@ const MobileBottomNav = ({
             className="flex flex-col items-center gap-1 group"
           >
             <div
-              className={`p-2 rounded-xl transition-colors duration-300 ${isActive ? "bg-[#0f172a]" : "bg-transparent"}`}
+              className={`p-2 rounded-xl transition-colors duration-300 ${
+                isActive ? "bg-[#0f172a]" : "bg-transparent"
+              }`}
             >
               <link.icon
-                className={`w-5 h-5 ${isActive ? "text-white" : "text-[#64748b]"}`}
+                className={`w-5 h-5 ${
+                  isActive ? "text-white" : "text-[#64748b]"
+                }`}
               />
             </div>
             <span
-              className={`text-[10px] font-bold tracking-wide ${isActive ? "text-[#0f172a]" : "text-[#64748b]"}`}
+              className={`text-[10px] font-bold tracking-wide ${
+                isActive ? "text-[#0f172a]" : "text-[#64748b]"
+              }`}
             >
               {link.label}
             </span>
@@ -360,7 +383,6 @@ const MobileSidebar = ({ isOpen, setIsOpen, categories }) => (
               </Link>
             ))}
 
-          
             <div className="mt-6">
               <span className="text-xs font-black text-[#94a3b8] uppercase tracking-widest px-2 mb-4 block">
                 Categories

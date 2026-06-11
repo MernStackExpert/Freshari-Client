@@ -41,12 +41,13 @@ const CheckoutForm = () => {
     }, 0) || 0;
 
   const calculateDeliveryCharge = () => {
-    if (subTotal >= 1000) return 0;
-    if (!activeCart || activeCart.length === 0) return 40;
+    if (!activeCart || activeCart.length === 0) return 0;
     return activeCart.reduce((max, item) => {
-      const charge = Number(item.shipping?.deliveryCharge || 0);
+      const charge = item.shipping?.freeDelivery
+        ? 0
+        : Number(item.shipping?.deliveryCharge || 0);
       return charge > max ? charge : max;
-    }, 40);
+    }, 0);
   };
 
   const deliveryCharge = calculateDeliveryCharge();
@@ -106,7 +107,7 @@ const CheckoutForm = () => {
   };
 
   const handleApplyCoupon = async () => {
-    if (!couponCode) return toast.error("কুপন কোড দিন");
+    if (!couponCode) return toast.error("Please enter a coupon code");
     try {
       setIsApplying(true);
       const res = await axios.post(
@@ -122,7 +123,7 @@ const CheckoutForm = () => {
       });
       toast.success(res.data.message);
     } catch (error) {
-      toast.error(error.response?.data?.message || "কুপনটি সঠিক নয়");
+      toast.error(error.response?.data?.message || "Invalid coupon code");
       setDiscount({ type: "", amount: 0 });
     } finally {
       setIsApplying(false);
@@ -137,7 +138,7 @@ const CheckoutForm = () => {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast.error("স্টার চিহ্নিত ফিল্ডগুলো পূরণ করুন");
+      toast.error("Please fill in all required fields marked with *");
       return;
     }
 
@@ -166,7 +167,7 @@ const CheckoutForm = () => {
       );
 
       if (res.status === 201 && res.data) {
-        toast.success("অর্ডার সফল হয়েছে!");
+        toast.success("Order placed successfully!");
 
         if (isDirectMode) {
           setBuyNowItem(null);
@@ -183,7 +184,7 @@ const CheckoutForm = () => {
       console.error("Order Error:", error);
       toast.error(
         error.response?.data?.message ||
-          "অর্ডার করতে সমস্যা হয়েছে, আবার চেষ্টা করুন",
+          "Failed to place order, please try again",
       );
     } finally {
       setIsOrdering(false);
@@ -192,45 +193,48 @@ const CheckoutForm = () => {
 
   if (!activeCart || activeCart.length === 0) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center bg-gray-50">
-        <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-6">
-          <Trash2 className="w-10 h-10 text-gray-400" />
+      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-[#f8fafc] font-sans">
+        <div className="w-28 h-28 bg-white shadow-sm rounded-full flex items-center justify-center mb-6">
+          <Trash2 className="w-12 h-12 text-[#94a3b8]" />
         </div>
-        <h2 className="text-2xl font-black text-gray-800 mb-2">
-          আপনার কার্ট সম্পূর্ণ খালি!
+        <h2 className="text-2xl md:text-3xl font-black text-[#0f172a] mb-3 tracking-tight">
+          Your Cart is Empty!
         </h2>
+        <p className="text-[#64748b] font-medium mb-8">
+          Looks like you haven't added any products to your cart yet.
+        </p>
         <button
-          onClick={() => router.push("/")}
-          className="mt-6 px-8 py-4 bg-[#064e3b] text-white rounded-2xl font-bold hover:bg-[#16a34a] transition-all shadow-xl shadow-[#064e3b]/20"
+          onClick={() => router.push("/product/shop")}
+          className="px-10 py-4 bg-[#0f172a] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#1e293b] hover:shadow-[0_10px_20px_rgba(15,23,42,0.15)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
         >
-          শপিং চালিয়ে যান
+          Continue Shopping
         </button>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#fcfdfd] min-h-screen py-16 px-4 font-sans">
+    <div className="bg-[#f8fafc] min-h-screen py-16 px-4 font-sans">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-7 space-y-10">
-          <div className="bg-white rounded-[32px] p-8 lg:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.03)] border border-gray-100">
-            <div className="flex items-center gap-4 mb-8">
-              <span className="w-10 h-10 bg-[#f0fdf4] text-[#16a34a] flex items-center justify-center rounded-2xl font-black text-lg">
+        <div className="lg:col-span-7 space-y-8">
+          <div className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-gray-100">
+            <div className="flex items-center gap-4 mb-8 border-b border-gray-100 pb-5">
+              <span className="w-10 h-10 bg-[#0f172a] text-white flex items-center justify-center rounded-xl font-black text-lg shadow-md">
                 1
               </span>
-              <h3 className="text-xl font-black text-[#064e3b] uppercase tracking-[2px]">
+              <h3 className="text-2xl font-black text-[#0f172a] uppercase tracking-widest">
                 Order Review
               </h3>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-5">
               {activeCart.map((item) => (
                 <div
                   key={item._id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-3xl bg-gray-50/50 border border-gray-100 gap-6 transition-all hover:border-[#16a34a]/30"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-[#f8fafc] border border-gray-100 gap-6 transition-all hover:border-[#f97316]/30 hover:shadow-sm"
                 >
-                  <div className="flex items-center gap-6">
-                    <div className="w-24 h-24 relative bg-white rounded-2xl p-2 shadow-sm shrink-0">
+                  <div className="flex items-center gap-5">
+                    <div className="w-24 h-24 relative bg-white rounded-xl p-2 shadow-sm shrink-0 border border-gray-100">
                       <Image
                         src={item.media?.thumbnail || ""}
                         alt={item.name}
@@ -238,8 +242,8 @@ const CheckoutForm = () => {
                         className="object-contain"
                       />
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <h4 className="text-base font-black text-gray-800 line-clamp-1">
+                    <div className="flex flex-col gap-1.5">
+                      <h4 className="text-base font-black text-[#0f172a] line-clamp-2 leading-tight">
                         {item.name}
                       </h4>
                       <span className="text-lg font-black text-[#f97316]">
@@ -248,27 +252,27 @@ const CheckoutForm = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-6">
-                    <div className="flex items-center bg-white rounded-2xl p-1.5 border border-gray-200 shadow-sm">
+                  <div className="flex items-center justify-between sm:justify-end gap-5">
+                    <div className="flex items-center bg-white rounded-xl p-1.5 border border-gray-200 shadow-sm">
                       <button
                         onClick={() => handleUpdateQuantity(item._id, "minus")}
-                        className="p-2 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+                        className="p-2.5 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                       >
-                        <Minus className="w-4 h-4 text-gray-600" />
+                        <Minus className="w-4 h-4 text-[#64748b]" />
                       </button>
-                      <span className="w-10 text-center font-black text-lg text-[#064e3b]">
+                      <span className="w-10 text-center font-black text-lg text-[#0f172a]">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => handleUpdateQuantity(item._id, "plus")}
-                        className="p-2 hover:bg-[#f0fdf4] hover:text-[#16a34a] rounded-xl transition-colors cursor-pointer"
+                        className="p-2.5 hover:bg-orange-50 hover:text-[#f97316] rounded-lg transition-colors cursor-pointer"
                       >
-                        <Plus className="w-4 h-4 text-gray-600" />
+                        <Plus className="w-4 h-4 text-[#64748b]" />
                       </button>
                     </div>
                     <button
                       onClick={() => handleRemoveItem(item._id)}
-                      className="w-12 h-12 flex items-center justify-center bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-colors cursor-pointer shadow-sm"
+                      className="w-12 h-12 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-colors cursor-pointer border border-red-100 hover:border-red-500 shadow-sm"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -278,12 +282,12 @@ const CheckoutForm = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-[32px] p-8 lg:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.03)] border border-gray-100">
-            <div className="flex items-center gap-4 mb-8">
-              <span className="w-10 h-10 bg-[#f0fdf4] text-[#16a34a] flex items-center justify-center rounded-2xl font-black text-lg">
+          <div className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-gray-100">
+            <div className="flex items-center gap-4 mb-8 border-b border-gray-100 pb-5">
+              <span className="w-10 h-10 bg-[#0f172a] text-white flex items-center justify-center rounded-xl font-black text-lg shadow-md">
                 2
               </span>
-              <h3 className="text-xl font-black text-[#064e3b] uppercase tracking-[2px]">
+              <h3 className="text-2xl font-black text-[#0f172a] uppercase tracking-widest">
                 Shipping Details
               </h3>
             </div>
@@ -293,32 +297,32 @@ const CheckoutForm = () => {
                 <input
                   name="name"
                   onChange={handleInputChange}
-                  className={`w-full p-5 bg-[#f9fafa] border ${errors.name ? "border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#16a34a] focus:ring-[#16a34a]/10"} rounded-2xl focus:ring-4 transition-all outline-none text-base font-bold text-gray-700`}
+                  className={`w-full p-4.5 bg-[#f8fafc] border ${errors.name ? "border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#f97316] focus:ring-[#f97316]/10"} rounded-xl focus:ring-4 transition-all outline-none text-sm font-bold text-[#0f172a] placeholder:font-medium placeholder:text-gray-400`}
                   placeholder="Your Full Name *"
                 />
               </div>
               <input
                 name="phone"
                 onChange={handleInputChange}
-                className={`w-full p-5 bg-[#f9fafa] border ${errors.phone ? "border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#16a34a] focus:ring-[#16a34a]/10"} rounded-2xl focus:ring-4 transition-all outline-none text-base font-bold text-gray-700`}
+                className={`w-full p-4.5 bg-[#f8fafc] border ${errors.phone ? "border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#f97316] focus:ring-[#f97316]/10"} rounded-xl focus:ring-4 transition-all outline-none text-sm font-bold text-[#0f172a] placeholder:font-medium placeholder:text-gray-400`}
                 placeholder="Phone Number *"
               />
               <input
                 name="whatsapp"
                 onChange={handleInputChange}
-                className="w-full p-5 bg-[#f9fafa] border border-gray-200 rounded-2xl focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 transition-all outline-none text-base font-bold text-gray-700"
+                className="w-full p-4.5 bg-[#f8fafc] border border-gray-200 rounded-xl focus:border-[#f97316] focus:ring-4 focus:ring-[#f97316]/10 transition-all outline-none text-sm font-bold text-[#0f172a] placeholder:font-medium placeholder:text-gray-400"
                 placeholder="WhatsApp Number (Optional)"
               />
               <input
                 name="email"
                 onChange={handleInputChange}
-                className="w-full p-5 bg-[#f9fafa] border border-gray-200 rounded-2xl focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 transition-all outline-none text-base font-bold text-gray-700"
+                className="w-full p-4.5 bg-[#f8fafc] border border-gray-200 rounded-xl focus:border-[#f97316] focus:ring-4 focus:ring-[#f97316]/10 transition-all outline-none text-sm font-bold text-[#0f172a] placeholder:font-medium placeholder:text-gray-400"
                 placeholder="Email Address (Optional)"
               />
               <input
                 name="postCode"
                 onChange={handleInputChange}
-                className="w-full p-5 bg-[#f9fafa] border border-gray-200 rounded-2xl focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 transition-all outline-none text-base font-bold text-gray-700"
+                className="w-full p-4.5 bg-[#f8fafc] border border-gray-200 rounded-xl focus:border-[#f97316] focus:ring-4 focus:ring-[#f97316]/10 transition-all outline-none text-sm font-bold text-[#0f172a] placeholder:font-medium placeholder:text-gray-400"
                 placeholder="Post Code (Optional)"
               />
               <div className="md:col-span-2">
@@ -326,7 +330,7 @@ const CheckoutForm = () => {
                   name="address"
                   onChange={handleInputChange}
                   rows="3"
-                  className={`w-full p-5 bg-[#f9fafa] border ${errors.address ? "border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#16a34a] focus:ring-[#16a34a]/10"} rounded-2xl focus:ring-4 transition-all outline-none text-base font-bold text-gray-700 resize-none`}
+                  className={`w-full p-4.5 bg-[#f8fafc] border ${errors.address ? "border-red-400 focus:ring-red-100" : "border-gray-200 focus:border-[#f97316] focus:ring-[#f97316]/10"} rounded-xl focus:ring-4 transition-all outline-none text-sm font-bold text-[#0f172a] resize-none placeholder:font-medium placeholder:text-gray-400`}
                   placeholder="Detailed Delivery Address (House/Road/Area) *"
                 ></textarea>
               </div>
@@ -335,15 +339,15 @@ const CheckoutForm = () => {
         </div>
 
         <div className="lg:col-span-5 space-y-8">
-          <div className="bg-white rounded-[32px] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.03)] border border-gray-100">
-            <h3 className="text-base font-black text-[#064e3b] uppercase tracking-[2px] mb-6">
+          <div className="bg-white rounded-[2rem] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-gray-100">
+            <h3 className="text-lg font-black text-[#0f172a] uppercase tracking-widest mb-6 pb-4 border-b border-gray-100">
               Payment Method
             </h3>
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <div className="flex-1 p-5 border-2 border-[#16a34a] bg-[#f0fdf4] rounded-2xl flex items-center gap-4 cursor-pointer relative overflow-hidden group">
+              <div className="flex-1 p-5 border-2 border-[#f97316] bg-orange-50 rounded-xl flex items-center gap-4 cursor-pointer relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                <CheckCircle2 className="w-6 h-6 text-[#16a34a] fill-white" />
-                <span className="text-sm font-black text-[#064e3b]">
+                <CheckCircle2 className="w-6 h-6 text-[#f97316] fill-white" />
+                <span className="text-sm font-black text-[#0f172a]">
                   Cash On Delivery
                 </span>
               </div>
@@ -351,7 +355,7 @@ const CheckoutForm = () => {
                 onClick={() =>
                   toast.error("Online payment is currently unavailable")
                 }
-                className="flex-1 p-5 border border-gray-200 bg-gray-50 rounded-2xl flex items-center gap-4 opacity-60 cursor-not-allowed"
+                className="flex-1 p-5 border border-gray-200 bg-[#f8fafc] rounded-xl flex items-center gap-4 opacity-60 cursor-not-allowed"
               >
                 <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
                 <span className="text-sm font-bold text-gray-500">
@@ -364,10 +368,10 @@ const CheckoutForm = () => {
               {!showCouponInput ? (
                 <button
                   onClick={() => setShowCouponInput(true)}
-                  className="flex items-center gap-2 text-[#16a34a] hover:text-[#064e3b] transition-colors text-sm font-black tracking-wide group w-full justify-center p-4 bg-[#f0fdf4] rounded-2xl border border-[#16a34a]/20 cursor-pointer"
+                  className="flex items-center gap-2 text-[#f97316] hover:text-[#ea580c] transition-colors text-sm font-black tracking-widest uppercase group w-full justify-center p-4 bg-orange-50 rounded-xl border border-[#f97316]/20 cursor-pointer"
                 >
                   <Tag className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                  Have a coupon code? Click here
+                  Apply Coupon Code
                 </button>
               ) : (
                 <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -375,20 +379,20 @@ const CheckoutForm = () => {
                     <input
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      className="flex-1 p-4 bg-[#f9fafa] border border-gray-200 rounded-2xl outline-none focus:border-[#16a34a] transition-all text-sm font-bold uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal"
+                      className="flex-1 p-4 bg-[#f8fafc] border border-gray-200 rounded-xl outline-none focus:border-[#f97316] transition-all text-sm font-bold uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal placeholder:font-medium placeholder:text-gray-400"
                       placeholder="Enter code here"
                     />
                     <button
                       onClick={handleApplyCoupon}
                       disabled={isApplying}
-                      className="bg-[#064e3b] text-white px-8 rounded-2xl font-black text-sm uppercase tracking-wider hover:bg-[#16a34a] transition-all shadow-lg cursor-pointer"
+                      className="bg-[#0f172a] text-white px-8 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[#1e293b] transition-all shadow-md cursor-pointer disabled:opacity-50"
                     >
                       {isApplying ? "..." : "Apply"}
                     </button>
                   </div>
                   <button
                     onClick={() => setShowCouponInput(false)}
-                    className="text-xs text-gray-400 font-bold hover:text-red-500 text-left pl-2"
+                    className="text-xs text-gray-400 font-bold hover:text-red-500 text-left pl-2 cursor-pointer transition-colors"
                   >
                     Cancel
                   </button>
@@ -396,41 +400,41 @@ const CheckoutForm = () => {
               )}
             </div>
 
-            <div className="space-y-5 bg-[#f9fafa] p-6 rounded-3xl border border-gray-100">
-              <div className="flex justify-between text-base font-bold text-gray-500">
+            <div className="space-y-4 bg-[#f8fafc] p-6 rounded-2xl border border-gray-100">
+              <div className="flex justify-between text-sm font-bold text-gray-500">
                 <span>Subtotal</span>
-                <span className="text-gray-800">
+                <span className="text-[#0f172a]">
                   ৳{subTotal.toLocaleString()}
                 </span>
               </div>
               {discountValue > 0 && (
-                <div className="flex justify-between text-base text-[#16a34a] font-black">
+                <div className="flex justify-between text-sm text-[#16a34a] font-black">
                   <span>Discount</span>
                   <span>- ৳{discountValue.toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex justify-between text-base font-bold text-gray-500 pb-5 border-b border-gray-200">
+              <div className="flex justify-between text-sm font-bold text-gray-500 pb-4 border-b border-gray-200">
                 <span>Delivery Charge</span>
-                <span className="text-gray-800">
+                <span className="text-[#0f172a]">
                   {deliveryCharge === 0 ? "FREE" : `৳${deliveryCharge}`}
                 </span>
               </div>
-              <div className="flex justify-between text-2xl font-black text-[#064e3b] pt-2">
-                <span>Total</span>
-                <span className="text-[#f97316]">
+              <div className="flex justify-between items-end pt-2">
+                <span className="text-lg font-black text-[#0f172a]">Total</span>
+                <span className="text-3xl font-black text-[#f97316]">
                   ৳{finalTotal.toLocaleString()}
                 </span>
               </div>
             </div>
 
             <div className="mt-8 mb-8 space-y-3">
-              <p className="text-[11px] font-black text-gray-400 uppercase tracking-[2px]">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                 Special Notes (Optional)
               </p>
               <textarea
                 name="note"
                 onChange={handleInputChange}
-                className="w-full p-5 bg-[#f9fafa] border border-gray-200 rounded-2xl focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 transition-all outline-none text-sm font-bold resize-none"
+                className="w-full p-4.5 bg-[#f8fafc] border border-gray-200 rounded-xl focus:border-[#f97316] focus:ring-4 focus:ring-[#f97316]/10 transition-all outline-none text-sm font-bold resize-none placeholder:font-medium placeholder:text-gray-400"
                 rows="2"
                 placeholder="Any special instructions for delivery..."
               ></textarea>
@@ -439,9 +443,9 @@ const CheckoutForm = () => {
             <button
               onClick={handlePlaceOrder}
               disabled={isOrdering}
-              className="w-full bg-gradient-to-r from-[#f97316] to-[#ea580c] hover:from-[#ea580c] hover:to-[#c2410c] text-white py-6 rounded-2xl font-black text-lg uppercase tracking-[2px] transition-all shadow-[0_10px_20px_rgba(249,115,22,0.2)] hover:shadow-[0_15px_30px_rgba(249,115,22,0.3)] hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0 cursor-pointer"
+              className="w-full bg-gradient-to-r from-[#f97316] to-[#ea580c] hover:from-[#ea580c] hover:to-[#c2410c] text-white py-5 rounded-xl font-black text-sm uppercase tracking-widest transition-all shadow-[0_10px_20px_rgba(249,115,22,0.2)] hover:shadow-[0_15px_30px_rgba(249,115,22,0.3)] hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0 cursor-pointer"
             >
-              {isOrdering ? "Processing Order..." : "Confirm Order"}
+              {isOrdering ? "Processing..." : "Confirm Order"}
             </button>
           </div>
         </div>
@@ -454,8 +458,8 @@ const CheckoutPage = () => {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-[#16a34a] border-t-transparent rounded-full animate-spin"></div>
+        <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+          <div className="w-12 h-12 border-4 border-[#0f172a] border-t-[#f97316] rounded-full animate-spin"></div>
         </div>
       }
     >

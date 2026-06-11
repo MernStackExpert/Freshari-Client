@@ -47,6 +47,7 @@ const TopCategories = () => {
             slidesPerView={3}
             spaceBetween={12}
             navigation={true}
+            loop={true}
             autoplay={{
               delay: 2500,
               disableOnInteraction: false,

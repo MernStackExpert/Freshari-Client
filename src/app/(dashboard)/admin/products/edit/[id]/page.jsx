@@ -20,8 +20,7 @@ import {
   ChevronLeft,
   Tag as TagIcon,
   Plus,
-  Hash,
-  ShieldCheck,
+  Link as LinkIcon,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
@@ -89,7 +88,15 @@ const UpdateProductPage = () => {
           axiosInstance.get(`/products/${id}`),
         ]);
         setCategories(catRes.data);
-        setFormData(prodRes.data);
+
+        const fetchedData = prodRes.data;
+        if (!fetchedData.media?.images) fetchedData.media.images = [];
+        if (!fetchedData.content?.features) fetchedData.content.features = [""];
+        if (!fetchedData.content?.tags) fetchedData.content.tags = [""];
+        if (!fetchedData.variants)
+          fetchedData.variants = [{ unit: "", price: "", stock: "" }];
+
+        setFormData(fetchedData);
       } catch (err) {
         toast.error("Failed to load product data");
       } finally {
@@ -117,7 +124,7 @@ const UpdateProductPage = () => {
     }
   };
 
-  const handleImgUpload = async (e, isGallery = false) => {
+  const handleImgUpload = async (e, type = "thumbnail", index = null) => {
     const file = e.target.files[0];
     if (!file) return;
     const body = new FormData();
@@ -129,12 +136,15 @@ const UpdateProductPage = () => {
         body,
       );
       const url = res.data.data.url;
-      if (isGallery) {
-        handleInputChange("media.images", [...formData.media.images, url]);
+
+      if (type === "gallery" && index !== null) {
+        const newImages = [...formData.media.images];
+        newImages[index] = url;
+        handleInputChange("media.images", newImages);
       } else {
         handleInputChange("media.thumbnail", url);
       }
-      toast.success("Image Updated");
+      toast.success("Image Updated Successfully");
     } catch (err) {
       toast.error("Upload failed");
     } finally {
@@ -167,13 +177,19 @@ const UpdateProductPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) {
-      toast.error("Check red marked fields!");
+      toast.error("Required fields are empty!");
       return;
     }
     setLoading(true);
     try {
       await axiosInstance.patch(`/products/${id}`, formData);
-      Swal.fire("Updated!", "All changes saved to database.", "success");
+      Swal.fire({
+        title: "Updated!",
+        text: "Product updated successfully",
+        icon: "success",
+        confirmButtonColor: "#f97316",
+        shape: "rounded-xl",
+      });
       router.push("/admin/products/manage-products");
     } catch (err) {
       toast.error("Update operation failed");
@@ -184,7 +200,7 @@ const UpdateProductPage = () => {
 
   if (loading && !formData.name)
     return (
-      <div className="h-screen flex items-center justify-center font-black uppercase text-xs tracking-[0.4em] text-[#22C55E] animate-pulse">
+      <div className="h-[80vh] flex items-center justify-center font-black uppercase text-sm tracking-[0.2em] text-[#f97316] animate-pulse">
         Fetching Master Data...
       </div>
     );
@@ -192,22 +208,22 @@ const UpdateProductPage = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-7xl mx-auto space-y-10 pb-20 font-sans"
+      className="w-full max-w-[1400px] mx-auto space-y-8 pb-24 font-sans px-4 sm:px-6 lg:px-8 mt-6"
     >
-      <div className="flex justify-between items-center bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm sticky top-0 z-50">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white/80 backdrop-blur-xl p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-sm sticky top-6 z-50 gap-4">
         <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={() => router.back()}
-            className="p-3 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all cursor-pointer"
+            className="p-3.5 bg-[#f8fafc] rounded-2xl hover:bg-gray-100 border border-gray-100 hover:border-gray-200 transition-all cursor-pointer"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={20} className="text-[#0f172a]" />
           </button>
           <div>
-            <h1 className="text-2xl font-black text-[#062010] uppercase tracking-tighter leading-none">
+            <h1 className="text-2xl md:text-3xl font-black text-[#0f172a] uppercase tracking-tight">
               Update Master Record
             </h1>
-            <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest mt-2">
+            <p className="text-[#f97316] text-[10px] md:text-xs font-black uppercase tracking-widest mt-1">
               {formData.name || "Loading..."}
             </p>
           </div>
@@ -215,67 +231,70 @@ const UpdateProductPage = () => {
         <button
           type="submit"
           disabled={loading}
-          className="bg-[#062010] text-[#22C55E] px-8 py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] flex items-center gap-3 cursor-pointer hover:shadow-lg transition-all disabled:opacity-50"
+          className="w-full sm:w-auto bg-[#0f172a] text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 cursor-pointer hover:bg-[#1e293b] hover:shadow-lg transition-all duration-300 disabled:opacity-50"
         >
           <Save size={18} /> {loading ? "Saving..." : "Update Product"}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section className="bg-white p-8 rounded-[3rem] border border-gray-100 space-y-6 shadow-sm">
-          <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-[#062010]">
-            <Info size={16} className="text-[#22C55E]" /> Core Identity
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <section className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+          <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-[#0f172a] border-b border-gray-50 pb-4">
+            <div className="p-2 bg-[#fff7ed] rounded-lg">
+              <Info size={18} className="text-[#f97316]" />
+            </div>
+            Core Identity
           </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase text-gray-400 ml-1">
-                Name
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                Product Name
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
-                className={`w-full bg-gray-50 border ${errors["name"] ? "border-red-500" : "border-transparent"} rounded-xl p-4 text-sm font-bold outline-none focus:ring-2 ring-green-100`}
+                className={`w-full bg-[#f8fafc] border ${errors["name"] ? "border-red-500" : "border-gray-100"} focus:border-[#f97316] rounded-xl p-4 text-sm font-bold outline-none transition-colors`}
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase text-gray-400 ml-1">
-                Slug
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                URL Slug
               </label>
               <input
                 type="text"
                 value={formData.slug}
                 onChange={(e) => handleInputChange("slug", e.target.value)}
-                className={`w-full bg-gray-50 border ${errors["slug"] ? "border-red-500" : "border-transparent"} rounded-xl p-4 text-sm font-bold outline-none`}
+                className={`w-full bg-[#f8fafc] border ${errors["slug"] ? "border-red-500" : "border-gray-100"} focus:border-[#f97316] rounded-xl p-4 text-sm font-bold outline-none transition-colors`}
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase text-gray-400 ml-1">
-                SKU
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                SKU Code
               </label>
               <input
                 type="text"
                 value={formData.sku}
                 onChange={(e) => handleInputChange("sku", e.target.value)}
-                className={`w-full bg-gray-50 border ${errors["sku"] ? "border-red-500" : "border-transparent"} rounded-xl p-4 text-sm font-bold outline-none`}
+                className={`w-full bg-[#f8fafc] border ${errors["sku"] ? "border-red-500" : "border-gray-100"} focus:border-[#f97316] rounded-xl p-4 text-sm font-bold outline-none transition-colors`}
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase text-gray-400 ml-1">
-                Brand
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                Brand Name
               </label>
               <input
                 type="text"
                 value={formData.brand}
                 onChange={(e) => handleInputChange("brand", e.target.value)}
-                className="w-full bg-gray-50 rounded-xl p-4 text-sm font-bold border-none outline-none"
+                className="w-full bg-[#f8fafc] border border-gray-100 focus:border-[#f97316] rounded-xl p-4 text-sm font-bold outline-none transition-colors"
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 border-t border-gray-50 pt-6">
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase text-gray-400">
-                Category (Slug Based)
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                Main Category
               </label>
               <select
                 value={formData.category.slug}
@@ -284,7 +303,7 @@ const UpdateProductPage = () => {
                   handleInputChange("category.slug", e.target.value);
                   handleInputChange("category.main", cat ? cat.slug : "");
                 }}
-                className={`w-full bg-gray-50 border ${errors["category.slug"] ? "border-red-500" : "border-transparent"} rounded-xl p-4 text-[10px] font-black uppercase outline-none cursor-pointer`}
+                className={`w-full bg-[#f8fafc] border ${errors["category.slug"] ? "border-red-500" : "border-gray-100"} focus:border-[#f97316] rounded-xl p-4 text-xs font-bold uppercase outline-none cursor-pointer transition-colors`}
               >
                 <option value="">Select Category</option>
                 {categories.map((cat) => (
@@ -294,8 +313,8 @@ const UpdateProductPage = () => {
                 ))}
               </select>
             </div>
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase text-gray-400">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
                 Sub Category
               </label>
               <input
@@ -304,95 +323,168 @@ const UpdateProductPage = () => {
                 onChange={(e) =>
                   handleInputChange("category.sub", e.target.value)
                 }
-                className="w-full bg-gray-50 rounded-xl p-4 text-sm font-bold border-none outline-none"
+                className="w-full bg-[#f8fafc] border border-gray-100 focus:border-[#f97316] rounded-xl p-4 text-sm font-bold outline-none transition-colors"
               />
             </div>
           </div>
         </section>
 
-        <section className="bg-[#062010] p-8 rounded-[3rem] space-y-6 text-white shadow-xl">
-          <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-            <ImageIcon size={16} className="text-[#22C55E]" /> Media assets
+        <section className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] p-8 rounded-[2rem] space-y-8 text-white shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
+          <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-white border-b border-white/10 pb-4 relative z-10">
+            <div className="p-2 bg-white/10 rounded-lg">
+              <ImageIcon size={18} className="text-[#f97316]" />
+            </div>
+            Media Configuration
           </h3>
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => setImgTab("upload")}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer ${imgTab === "upload" ? "bg-[#22C55E] text-[#062010]" : "bg-white/10"}`}
-            >
-              Upload
-            </button>
-            <button
-              type="button"
-              onClick={() => setImgTab("url")}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer ${imgTab === "url" ? "bg-[#22C55E] text-[#062010]" : "bg-white/10"}`}
-            >
-              URL
-            </button>
-          </div>
-          <div
-            className={`p-8 border-2 border-dashed ${errors["media.thumbnail"] ? "border-red-500" : "border-white/10"} rounded-[2rem] text-center relative hover:border-[#22C55E]/50 transition-all`}
-          >
-            {imgTab === "upload" ? (
-              <>
-                <UploadCloud
-                  size={30}
-                  className="mx-auto mb-2 text-[#22C55E]"
-                />
-                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                  Change Thumbnail
-                </p>
-                <input
-                  type="file"
-                  onChange={(e) => handleImgUpload(e)}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                />
-              </>
-            ) : (
-              <input
-                type="text"
-                placeholder="https://..."
-                value={formData.media.thumbnail}
-                onChange={(e) =>
-                  handleInputChange("media.thumbnail", e.target.value)
-                }
-                className="w-full bg-transparent outline-none text-xs text-center font-bold"
-              />
-            )}
-          </div>
-          <div className="space-y-2">
-            <label className="text-[9px] font-black uppercase text-gray-500">
-              Gallery (Comma Separated)
-            </label>
-            <textarea
-              value={formData.media.images?.join(",")}
-              onChange={(e) =>
-                handleInputChange("media.images", e.target.value.split(","))
-              }
-              className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-[10px] text-white outline-none min-h-[60px]"
-            />
+
+          <div className="space-y-6 relative z-10">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-black uppercase text-gray-300 tracking-widest">
+                  Primary Thumbnail
+                </label>
+                <div className="flex bg-white/10 rounded-lg p-1">
+                  <button
+                    type="button"
+                    onClick={() => setImgTab("upload")}
+                    className={`px-4 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest cursor-pointer transition-colors ${imgTab === "upload" ? "bg-[#f97316] text-white shadow-md" : "text-gray-400 hover:text-white"}`}
+                  >
+                    Upload
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImgTab("url")}
+                    className={`px-4 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest cursor-pointer transition-colors ${imgTab === "url" ? "bg-[#f97316] text-white shadow-md" : "text-gray-400 hover:text-white"}`}
+                  >
+                    URL
+                  </button>
+                </div>
+              </div>
+
+              <div
+                className={`p-6 border-2 border-dashed ${errors["media.thumbnail"] ? "border-red-500 bg-red-500/5" : "border-white/20 bg-white/5"} rounded-2xl text-center relative hover:border-[#f97316]/50 hover:bg-white/10 transition-all group`}
+              >
+                {imgTab === "upload" ? (
+                  <>
+                    <UploadCloud
+                      size={32}
+                      className="mx-auto mb-3 text-[#f97316] group-hover:scale-110 transition-transform"
+                    />
+                    <p className="text-[10px] font-black text-white uppercase tracking-widest">
+                      Drop image or click to browse
+                    </p>
+                    <input
+                      type="file"
+                      onChange={(e) => handleImgUpload(e, "thumbnail")}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Paste image URL here..."
+                    value={formData.media.thumbnail}
+                    onChange={(e) =>
+                      handleInputChange("media.thumbnail", e.target.value)
+                    }
+                    className="w-full bg-transparent outline-none text-xs text-center font-bold text-white placeholder-gray-500"
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-white/10">
+              <label className="text-[10px] font-black uppercase text-gray-300 tracking-widest flex items-center gap-2">
+                <Layers size={14} /> Gallery Images
+              </label>
+              <div className="space-y-3">
+                {formData.media.images.map((img, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 bg-white/5 p-2.5 rounded-xl border border-white/10"
+                  >
+                    <div className="flex-1 flex items-center bg-black/20 rounded-lg px-3 py-2">
+                      <LinkIcon size={14} className="text-gray-400 mr-2" />
+                      <input
+                        type="text"
+                        value={img}
+                        onChange={(e) => {
+                          const imgs = [...formData.media.images];
+                          imgs[i] = e.target.value;
+                          handleInputChange("media.images", imgs);
+                        }}
+                        placeholder="Image URL"
+                        className="w-full bg-transparent text-xs font-bold text-white outline-none placeholder-gray-500"
+                      />
+                    </div>
+                    <div className="relative overflow-hidden cursor-pointer bg-[#f97316]/10 p-2.5 rounded-lg border border-[#f97316]/30 hover:bg-[#f97316]/20 transition-colors">
+                      <UploadCloud size={16} className="text-[#f97316]" />
+                      <input
+                        type="file"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => handleImgUpload(e, "gallery", i)}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleInputChange(
+                          "media.images",
+                          formData.media.images.filter((_, idx) => idx !== i),
+                        )
+                      }
+                      className="p-2.5 bg-red-500/10 text-red-400 rounded-lg border border-red-500/30 hover:bg-red-500/20 hover:text-red-300 transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleInputChange("media.images", [
+                      ...formData.media.images,
+                      "",
+                    ])
+                  }
+                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-[10px] font-black uppercase text-[#f97316] flex items-center justify-center gap-2 cursor-pointer hover:bg-white/5 transition-colors"
+                >
+                  <Plus size={14} /> Add Gallery Image
+                </button>
+              </div>
+            </div>
           </div>
         </section>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section className="bg-white p-8 rounded-[3rem] border border-gray-100 space-y-6 shadow-sm">
-          <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-[#062010]">
-            <PlusCircle size={16} className="text-[#22C55E]" /> Features List
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <section className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+          <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-[#0f172a] border-b border-gray-50 pb-4">
+            <div className="p-2 bg-[#fff7ed] rounded-lg">
+              <PlusCircle size={18} className="text-[#f97316]" />
+            </div>
+            Features List
           </h3>
           <div className="space-y-3">
             {formData.content.features?.map((f, i) => (
-              <div key={i} className="flex gap-2">
-                <input
-                  type="text"
-                  value={f}
-                  onChange={(e) => {
-                    const feats = [...formData.content.features];
-                    feats[i] = e.target.value;
-                    handleInputChange("content.features", feats);
-                  }}
-                  className="flex-1 bg-gray-50 p-4 rounded-xl text-xs font-bold border-none outline-none"
-                />
+              <div key={i} className="flex gap-3 items-center group">
+                <div className="flex-1 bg-[#f8fafc] border border-gray-100 rounded-xl flex items-center px-4 py-3 focus-within:border-[#f97316] transition-colors">
+                  <span className="text-gray-400 text-xs font-black mr-3">
+                    {i + 1}.
+                  </span>
+                  <input
+                    type="text"
+                    value={f}
+                    onChange={(e) => {
+                      const feats = [...formData.content.features];
+                      feats[i] = e.target.value;
+                      handleInputChange("content.features", feats);
+                    }}
+                    placeholder={`Feature description...`}
+                    className="w-full bg-transparent text-sm font-bold border-none outline-none text-[#0f172a]"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() =>
@@ -401,9 +493,9 @@ const UpdateProductPage = () => {
                       formData.content.features.filter((_, idx) => idx !== i),
                     )
                   }
-                  className="text-red-400 cursor-pointer hover:text-red-600 transition-colors"
+                  className="p-3 text-red-400 bg-red-50 rounded-xl hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={18} />
                 </button>
               </div>
             ))}
@@ -415,30 +507,37 @@ const UpdateProductPage = () => {
                   "",
                 ])
               }
-              className="text-[10px] font-black uppercase text-[#22C55E] flex items-center gap-2 cursor-pointer mt-2"
+              className="text-xs font-black uppercase text-[#f97316] bg-[#fff7ed] px-5 py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer mt-4 hover:bg-[#ffedd5] transition-colors w-full border border-[#f97316]/20"
             >
-              <Plus size={14} /> Add Feature
+              <Plus size={16} /> Add New Feature
             </button>
           </div>
         </section>
 
-        <section className="bg-white p-8 rounded-[3rem] border border-gray-100 space-y-6 shadow-sm">
-          <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-[#062010]">
-            <TagIcon size={16} className="text-[#22C55E]" /> Search Tags
+        <section className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+          <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-[#0f172a] border-b border-gray-50 pb-4">
+            <div className="p-2 bg-[#fff7ed] rounded-lg">
+              <TagIcon size={18} className="text-[#f97316]" />
+            </div>
+            Search Tags
           </h3>
           <div className="space-y-3">
             {formData.content.tags?.map((t, i) => (
-              <div key={i} className="flex gap-2">
-                <input
-                  type="text"
-                  value={t}
-                  onChange={(e) => {
-                    const tags = [...formData.content.tags];
-                    tags[i] = e.target.value;
-                    handleInputChange("content.tags", tags);
-                  }}
-                  className="flex-1 bg-gray-50 p-4 rounded-xl text-xs font-bold border-none outline-none"
-                />
+              <div key={i} className="flex gap-3 items-center">
+                <div className="flex-1 bg-[#f8fafc] border border-gray-100 rounded-xl flex items-center px-4 py-3 focus-within:border-[#f97316] transition-colors">
+                  <TagIcon size={14} className="text-gray-400 mr-3" />
+                  <input
+                    type="text"
+                    value={t}
+                    onChange={(e) => {
+                      const tags = [...formData.content.tags];
+                      tags[i] = e.target.value;
+                      handleInputChange("content.tags", tags);
+                    }}
+                    placeholder={`Keyword or Tag...`}
+                    className="w-full bg-transparent text-sm font-bold border-none outline-none text-[#0f172a]"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() =>
@@ -447,9 +546,9 @@ const UpdateProductPage = () => {
                       formData.content.tags.filter((_, idx) => idx !== i),
                     )
                   }
-                  className="text-red-400 cursor-pointer"
+                  className="p-3 text-red-400 bg-red-50 rounded-xl hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={18} />
                 </button>
               </div>
             ))}
@@ -461,196 +560,293 @@ const UpdateProductPage = () => {
                   "",
                 ])
               }
-              className="text-[10px] font-black uppercase text-[#22C55E] flex items-center gap-2 cursor-pointer mt-2"
+              className="text-xs font-black uppercase text-[#f97316] bg-[#fff7ed] px-5 py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer mt-4 hover:bg-[#ffedd5] transition-colors w-full border border-[#f97316]/20"
             >
-              <Plus size={14} /> Add Tag
+              <Plus size={16} /> Add New Tag
             </button>
           </div>
         </section>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <section className="bg-white p-8 rounded-[3rem] border border-gray-100 space-y-4 shadow-sm">
-          <h3 className="text-xs font-black uppercase tracking-widest">
-            <DollarSign size={16} className="inline mr-2 text-[#22C55E]" />{" "}
-            Financials
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <section className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+          <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-[#0f172a] border-b border-gray-50 pb-4">
+            <div className="p-2 bg-[#fff7ed] rounded-lg">
+              <DollarSign size={18} className="text-[#f97316]" />
+            </div>
+            Pricing Strategy
           </h3>
-          <div className="space-y-3">
-            <input
-              type="number"
-              placeholder="Price"
-              value={formData.pricing.price}
-              onChange={(e) =>
-                handleInputChange(
-                  "pricing.price",
-                  e.target.value === "" ? "" : Number(e.target.value),
-                )
-              }
-              className={`w-full bg-gray-50 p-4 rounded-xl text-xs font-black ${errors["pricing.price"] ? "border border-red-500" : "border-none"}`}
-            />
-            <input
-              type="number"
-              placeholder="Old Price"
-              value={formData.pricing.oldPrice}
-              onChange={(e) =>
-                handleInputChange(
-                  "pricing.oldPrice",
-                  e.target.value === "" ? "" : Number(e.target.value),
-                )
-              }
-              className="w-full bg-gray-50 p-4 rounded-xl text-xs font-black border-none"
-            />
-            <input
-              type="number"
-              placeholder="Discount %"
-              value={formData.pricing.discountPercentage}
-              onChange={(e) =>
-                handleInputChange(
-                  "pricing.discountPercentage",
-                  e.target.value === "" ? "" : Number(e.target.value),
-                )
-              }
-              className="w-full bg-gray-50 p-4 rounded-xl text-xs font-black border-none"
-            />
-            <select
-              value={formData.pricing.discountType}
-              onChange={(e) =>
-                handleInputChange("pricing.discountType", e.target.value)
-              }
-              className="w-full bg-gray-50 p-4 rounded-xl text-[10px] font-black uppercase border-none cursor-pointer"
-            >
-              <option value="percentage">Percentage</option>
-              <option value="flat">Flat</option>
-            </select>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                Current Price
+              </label>
+              <input
+                type="number"
+                placeholder="0.00"
+                value={formData.pricing.price}
+                onChange={(e) =>
+                  handleInputChange(
+                    "pricing.price",
+                    e.target.value === "" ? "" : Number(e.target.value),
+                  )
+                }
+                className={`w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border ${errors["pricing.price"] ? "border-red-500" : "border-gray-100"} focus:border-[#f97316] outline-none transition-colors`}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                Old Price (Optional)
+              </label>
+              <input
+                type="number"
+                placeholder="0.00"
+                value={formData.pricing.oldPrice}
+                onChange={(e) =>
+                  handleInputChange(
+                    "pricing.oldPrice",
+                    e.target.value === "" ? "" : Number(e.target.value),
+                  )
+                }
+                className="w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border border-gray-100 focus:border-[#f97316] outline-none transition-colors"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                  Discount Val
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={formData.pricing.discountPercentage}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "pricing.discountPercentage",
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
+                  className="w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border border-gray-100 focus:border-[#f97316] outline-none transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                  Type
+                </label>
+                <select
+                  value={formData.pricing.discountType}
+                  onChange={(e) =>
+                    handleInputChange("pricing.discountType", e.target.value)
+                  }
+                  className="w-full bg-[#f8fafc] p-4 rounded-xl text-[11px] font-black uppercase border border-gray-100 focus:border-[#f97316] outline-none cursor-pointer transition-colors"
+                >
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="flat">Flat Amount</option>
+                </select>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="bg-white p-8 rounded-[3rem] border border-gray-100 space-y-4 shadow-sm">
-          <h3 className="text-xs font-black uppercase tracking-widest">
-            <Package size={16} className="inline mr-2 text-[#22C55E]" />{" "}
-            inventory
+        <section className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+          <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-[#0f172a] border-b border-gray-50 pb-4">
+            <div className="p-2 bg-[#fff7ed] rounded-lg">
+              <Package size={18} className="text-[#f97316]" />
+            </div>
+            Inventory Data
           </h3>
-          <div className="space-y-3">
-            <input
-              type="number"
-              placeholder="Stock"
-              value={formData.inventory.stock}
-              onChange={(e) =>
-                handleInputChange(
-                  "inventory.stock",
-                  e.target.value === "" ? "" : Number(e.target.value),
-                )
-              }
-              className={`w-full bg-gray-50 p-4 rounded-xl text-xs font-black ${errors["inventory.stock"] ? "border border-red-500" : "border-none"}`}
-            />
-            <input
-              type="text"
-              placeholder="Unit (kg, dozen, pc)"
-              value={formData.inventory.unit}
-              onChange={(e) =>
-                handleInputChange("inventory.unit", e.target.value)
-              }
-              className="w-full bg-gray-50 p-4 rounded-xl text-xs font-bold border-none"
-            />
-            <input
-              type="number"
-              placeholder="Min Order Qty"
-              value={formData.inventory.minOrderQuantity}
-              onChange={(e) =>
-                handleInputChange(
-                  "inventory.minOrderQuantity",
-                  e.target.value === "" ? "" : Number(e.target.value),
-                )
-              }
-              className="w-full bg-gray-50 p-4 rounded-xl text-xs font-bold border-none"
-            />
-            <select
-              value={formData.inventory.stockStatus}
-              onChange={(e) =>
-                handleInputChange("inventory.stockStatus", e.target.value)
-              }
-              className="w-full bg-gray-50 p-4 rounded-xl text-[10px] font-black uppercase border-none cursor-pointer"
-            >
-              <option value="in-stock">In-Stock</option>
-              <option value="out-of-stock">Out-of-Stock</option>
-            </select>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                  Total Stock
+                </label>
+                <input
+                  type="number"
+                  placeholder="Qty"
+                  value={formData.inventory.stock}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "inventory.stock",
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
+                  className={`w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border ${errors["inventory.stock"] ? "border-red-500" : "border-gray-100"} focus:border-[#f97316] outline-none transition-colors`}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                  Unit Type
+                </label>
+                <input
+                  type="text"
+                  placeholder="kg, pc, ltr"
+                  value={formData.inventory.unit}
+                  onChange={(e) =>
+                    handleInputChange("inventory.unit", e.target.value)
+                  }
+                  className="w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border border-gray-100 focus:border-[#f97316] outline-none transition-colors"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                  Min Order
+                </label>
+                <input
+                  type="number"
+                  placeholder="1"
+                  value={formData.inventory.minOrderQuantity}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "inventory.minOrderQuantity",
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
+                  className="w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border border-gray-100 focus:border-[#f97316] outline-none transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                  Status
+                </label>
+                <select
+                  value={formData.inventory.stockStatus}
+                  onChange={(e) =>
+                    handleInputChange("inventory.stockStatus", e.target.value)
+                  }
+                  className="w-full bg-[#f8fafc] p-4 rounded-xl text-[11px] font-black uppercase border border-gray-100 focus:border-[#f97316] outline-none cursor-pointer transition-colors"
+                >
+                  <option value="in-stock">In-Stock</option>
+                  <option value="out-of-stock">Out-of-Stock</option>
+                </select>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="bg-white p-8 rounded-[3rem] border border-gray-100 space-y-4 shadow-sm">
-          <h3 className="text-xs font-black uppercase tracking-widest">
-            <Truck size={16} className="inline mr-2 text-[#22C55E]" /> Logistics
+        <section className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+          <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-[#0f172a] border-b border-gray-50 pb-4">
+            <div className="p-2 bg-[#fff7ed] rounded-lg">
+              <Truck size={18} className="text-[#f97316]" />
+            </div>
+            Logistics
           </h3>
-          <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Origin"
-              value={formData.shipping.origin}
-              onChange={(e) =>
-                handleInputChange("shipping.origin", e.target.value)
-              }
-              className={`w-full bg-gray-50 p-4 rounded-xl text-xs font-bold ${errors["shipping.origin"] ? "border border-red-500" : "border-none"}`}
-            />
-            <input
-              type="number"
-              placeholder="Del Charge"
-              value={formData.shipping.deliveryCharge}
-              onChange={(e) =>
-                handleInputChange(
-                  "shipping.deliveryCharge",
-                  e.target.value === "" ? "" : Number(e.target.value),
-                )
-              }
-              className="w-full bg-gray-50 p-4 rounded-xl text-xs font-bold border-none"
-            />
-            <input
-              type="text"
-              placeholder="Estimated Delivery"
-              value={formData.shipping.estimatedDelivery}
-              onChange={(e) =>
-                handleInputChange("shipping.estimatedDelivery", e.target.value)
-              }
-              className="w-full bg-gray-50 p-4 rounded-xl text-xs font-bold border-none"
-            />
-            <input
-              type="text"
-              placeholder="Shelf Life"
-              value={formData.shipping.shelfLife}
-              onChange={(e) =>
-                handleInputChange("shipping.shelfLife", e.target.value)
-              }
-              className="w-full bg-gray-50 p-4 rounded-xl text-xs font-bold border-none"
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                Product Origin
+              </label>
+              <input
+                type="text"
+                placeholder="Country or Region"
+                value={formData.shipping.origin}
+                onChange={(e) =>
+                  handleInputChange("shipping.origin", e.target.value)
+                }
+                className={`w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border ${errors["shipping.origin"] ? "border-red-500" : "border-gray-100"} focus:border-[#f97316] outline-none transition-colors`}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                  Del Charge
+                </label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={formData.shipping.deliveryCharge}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "shipping.deliveryCharge",
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
+                  className="w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border border-gray-100 focus:border-[#f97316] outline-none transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                  Est. Delivery
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 2-3 Days"
+                  value={formData.shipping.estimatedDelivery}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "shipping.estimatedDelivery",
+                      e.target.value,
+                    )
+                  }
+                  className="w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border border-gray-100 focus:border-[#f97316] outline-none transition-colors"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                Shelf Life
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. 6 Months"
+                value={formData.shipping.shelfLife}
+                onChange={(e) =>
+                  handleInputChange("shipping.shelfLife", e.target.value)
+                }
+                className="w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border border-gray-100 focus:border-[#f97316] outline-none transition-colors"
+              />
+            </div>
           </div>
         </section>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section className="bg-white p-10 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-8">
-          <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-[#062010]">
-            <Settings size={18} className="text-[#22C55E]" /> descriptions &
-            Flags
-          </h3>
+      <section className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+        <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-[#0f172a] border-b border-gray-50 pb-4">
+          <div className="p-2 bg-[#fff7ed] rounded-lg">
+            <Settings size={18} className="text-[#f97316]" />
+          </div>
+          Description & Active Flags
+        </h3>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                Short Description
+              </label>
+              <input
+                type="text"
+                placeholder="A brief summary..."
+                value={formData.content.shortDescription}
+                onChange={(e) =>
+                  handleInputChange("content.shortDescription", e.target.value)
+                }
+                className="w-full bg-[#f8fafc] p-4 rounded-xl text-sm font-bold border border-gray-100 focus:border-[#f97316] outline-none transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                Full Description
+              </label>
+              <textarea
+                rows="6"
+                placeholder="Detailed product information..."
+                value={formData.content.description}
+                onChange={(e) =>
+                  handleInputChange("content.description", e.target.value)
+                }
+                className="w-full bg-[#f8fafc] p-5 rounded-2xl text-sm font-medium border border-gray-100 focus:border-[#f97316] outline-none transition-colors resize-none"
+              ></textarea>
+            </div>
+          </div>
+
           <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Short Snippet"
-              value={formData.content.shortDescription}
-              onChange={(e) =>
-                handleInputChange("content.shortDescription", e.target.value)
-              }
-              className="w-full bg-gray-50 p-4 rounded-xl text-xs font-bold outline-none"
-            />
-            <textarea
-              rows="4"
-              placeholder="Full Detailed Description"
-              value={formData.content.description}
-              onChange={(e) =>
-                handleInputChange("content.description", e.target.value)
-              }
-              className="w-full bg-gray-50 p-8 rounded-[2.5rem] text-sm font-medium outline-none"
-            ></textarea>
-            <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-50">
+            <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1 block">
+              Toggle Properties
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
                 "isActive",
                 "isNew",
@@ -668,134 +864,170 @@ const UpdateProductPage = () => {
                     key={key}
                     type="button"
                     onClick={() => handleInputChange(path, !val)}
-                    className={`px-4 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest border transition-all cursor-pointer ${val ? "bg-[#062010] text-[#22C55E] border-[#22C55E]" : "bg-gray-50 text-gray-400 border-gray-100"}`}
+                    className={`p-4 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-2 ${val ? "bg-[#fff7ed] text-[#f97316] border-[#f97316]" : "bg-[#f8fafc] text-gray-400 border-gray-100 hover:border-gray-300"}`}
                   >
+                    <div
+                      className={`w-3 h-3 rounded-full ${val ? "bg-[#f97316] shadow-[0_0_10px_rgba(249,115,22,0.5)]" : "bg-gray-300"}`}
+                    ></div>
                     {key.replace("is", "").replace("free", "Free ")}
                   </button>
                 );
               })}
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="bg-white p-10 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-8">
-          <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-[#062010]">
-            <Star size={18} className="text-[#22C55E]" /> Social, Variants &
-            Meta
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase text-gray-400">
-                Rating (0-5)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.social.rating}
-                onChange={(e) =>
-                  handleInputChange(
-                    "social.rating",
-                    e.target.value === "" ? "" : Number(e.target.value),
-                  )
-                }
-                className="bg-gray-50 p-4 rounded-xl text-xs font-black outline-none"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase text-gray-400">
-                Reviews Count
-              </label>
-              <input
-                type="number"
-                value={formData.social.totalReviews}
-                onChange={(e) =>
-                  handleInputChange(
-                    "social.totalReviews",
-                    e.target.value === "" ? "" : Number(e.target.value),
-                  )
-                }
-                className="bg-gray-50 p-4 rounded-xl text-xs font-black outline-none"
-              />
-            </div>
+      <section className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+        <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-[#0f172a] border-b border-gray-50 pb-4">
+          <div className="p-2 bg-[#fff7ed] rounded-lg">
+            <Layers size={18} className="text-[#f97316]" />
           </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <label className="text-[9px] font-black uppercase text-gray-400">
-                Manage Variants
-              </label>
+          Product Variants
+        </h3>
+        <div className="space-y-4">
+          {formData.variants?.map((v, i) => (
+            <div
+              key={i}
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-[#f8fafc] border border-gray-100 p-5 rounded-2xl relative group hover:border-[#f97316]/30 transition-colors"
+            >
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase text-gray-400 ml-1">
+                  Size/Unit
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 500g"
+                  value={v.unit}
+                  onChange={(e) => {
+                    const vars = [...formData.variants];
+                    vars[i].unit = e.target.value;
+                    handleInputChange("variants", vars);
+                  }}
+                  className="w-full bg-white p-3 rounded-xl border border-gray-100 focus:border-[#f97316] text-sm font-bold outline-none transition-colors"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase text-gray-400 ml-1">
+                  Price
+                </label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={v.price}
+                  onChange={(e) => {
+                    const vars = [...formData.variants];
+                    vars[i].price =
+                      e.target.value === "" ? "" : Number(e.target.value);
+                    handleInputChange("variants", vars);
+                  }}
+                  className="w-full bg-white p-3 rounded-xl border border-gray-100 focus:border-[#f97316] text-sm font-bold outline-none transition-colors"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase text-gray-400 ml-1">
+                  Stock
+                </label>
+                <input
+                  type="number"
+                  placeholder="Qty"
+                  value={v.stock}
+                  onChange={(e) => {
+                    const vars = [...formData.variants];
+                    vars[i].stock =
+                      e.target.value === "" ? "" : Number(e.target.value);
+                    handleInputChange("variants", vars);
+                  }}
+                  className="w-full bg-white p-3 rounded-xl border border-gray-100 focus:border-[#f97316] text-sm font-bold outline-none transition-colors"
+                />
+              </div>
               <button
                 type="button"
                 onClick={() =>
-                  handleInputChange("variants", [
-                    ...formData.variants,
-                    { unit: "", price: "", stock: "" },
-                  ])
+                  handleInputChange(
+                    "variants",
+                    formData.variants.filter((_, idx) => idx !== i),
+                  )
                 }
-                className="text-[10px] font-black uppercase text-[#22C55E] flex items-center gap-1 cursor-pointer"
+                className="absolute -top-3 -right-3 bg-white text-red-500 rounded-full p-1.5 shadow-md cursor-pointer hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
               >
-                <Plus size={14} /> Add Row
+                <XCircle size={18} />
               </button>
             </div>
-            <div className="space-y-3">
-              {formData.variants?.map((v, i) => (
-                <div
-                  key={i}
-                  className="grid grid-cols-3 gap-2 bg-gray-50 p-3 rounded-2xl relative"
-                >
-                  <input
-                    type="text"
-                    placeholder="Unit"
-                    value={v.unit}
-                    onChange={(e) => {
-                      const vars = [...formData.variants];
-                      vars[i].unit = e.target.value;
-                      handleInputChange("variants", vars);
-                    }}
-                    className="bg-white p-2 rounded-lg text-[10px] font-bold outline-none"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Price"
-                    value={v.price}
-                    onChange={(e) => {
-                      const vars = [...formData.variants];
-                      vars[i].price =
-                        e.target.value === "" ? "" : Number(e.target.value);
-                      handleInputChange("variants", vars);
-                    }}
-                    className="bg-white p-2 rounded-lg text-[10px] font-bold outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleInputChange(
-                        "variants",
-                        formData.variants.filter((_, idx) => idx !== i),
-                      )
-                    }
-                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 cursor-pointer hover:bg-red-600"
-                  >
-                    <XCircle size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              handleInputChange("variants", [
+                ...formData.variants,
+                { unit: "", price: "", stock: "" },
+              ])
+            }
+            className="w-full py-4 rounded-2xl border-2 border-dashed border-[#f97316]/30 text-xs font-black uppercase text-[#f97316] flex items-center justify-center gap-2 cursor-pointer hover:bg-[#fff7ed] transition-colors"
+          >
+            <Plus size={16} /> Add New Variant
+          </button>
+        </div>
+      </section>
+
+      <section className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+        <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-[#0f172a] border-b border-gray-50 pb-4">
+          <div className="p-2 bg-[#fff7ed] rounded-lg">
+            <Star size={18} className="text-[#f97316]" />
           </div>
-          <div className="pt-6 border-t border-gray-50 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#062010] flex items-center justify-center text-[#22C55E] font-black text-xs shadow-lg">
+          Social & Metadata
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-end">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+              Rating (0-5)
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              placeholder="e.g. 4.5"
+              value={formData.social.rating}
+              onChange={(e) =>
+                handleInputChange(
+                  "social.rating",
+                  e.target.value === "" ? "" : Number(e.target.value),
+                )
+              }
+              className="w-full bg-[#f8fafc] border border-gray-100 focus:border-[#f97316] rounded-xl p-4 text-sm font-black outline-none transition-colors"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider ml-1">
+              Total Reviews
+            </label>
+            <input
+              type="number"
+              placeholder="e.g. 120"
+              value={formData.social.totalReviews}
+              onChange={(e) =>
+                handleInputChange(
+                  "social.totalReviews",
+                  e.target.value === "" ? "" : Number(e.target.value),
+                )
+              }
+              className="w-full bg-[#f8fafc] border border-gray-100 focus:border-[#f97316] rounded-xl p-4 text-sm font-black outline-none transition-colors"
+            />
+          </div>
+          <div className="bg-[#f8fafc] p-4 rounded-2xl border border-gray-100 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-[#0f172a] flex items-center justify-center text-white font-black text-sm shadow-md">
               NS
             </div>
             <div>
-              <p className="text-[10px] font-black text-[#062010] uppercase">
+              <p className="text-xs font-black text-[#0f172a] uppercase tracking-wide">
                 {formData.metadata.addedBy.name}
               </p>
-              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
-                System ID: {id.slice(-8)}
+              <p className="text-[10px] font-bold text-gray-500 uppercase mt-1">
+                Role: Master Admin
               </p>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </form>
   );
 };
