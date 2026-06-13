@@ -29,7 +29,7 @@ const Hero = () => {
   }, []);
 
   const sliderBanners = banners.filter((b) => !b.isRight);
-  const rightBanner = banners.find((b) => b.isRight);
+  const rightBanner = banners.find((b) => b.isRight); 
 
   return (
     <div className="w-full flex flex-col">

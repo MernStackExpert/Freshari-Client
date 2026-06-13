@@ -1,5 +1,5 @@
 "use client";
-import Navbar from "@/components/shared/Navbar";
+import Navbar from "@/components/shared/navbar/Navbar";
 import Footer from "@/components/shared/Footer";
 import { Suspense } from "react";
 
@@ -9,7 +9,6 @@ export default function ClientLayout({ children }) {
       <Suspense fallback={<div className="h-20 bg-white" />}>
         <Navbar />
       </Suspense>
-
 
       <main className="flex-grow">{children}</main>
 
