@@ -9,9 +9,12 @@ import Searchbar from "./Searchbar";
 const DesktopTopNav = ({ cartCount, totalPrice, setIsCartOpen }) => (
   <div className="hidden md:block bg-white/95 backdrop-blur-xl border-b border-gray-100 z-50 w-full overflow-hidden">
     <div className="max-w-7xl mx-auto px-4 py-4 lg:py-5 flex items-center justify-between gap-4 lg:gap-8 w-full">
-      <Link href="/" className="shrink-0 transition-transform duration-300 hover:scale-105">
+      <Link
+        href="/"
+        className="shrink-0 transition-transform duration-300 hover:scale-105"
+      >
         <Image
-          src="/arshe-mart-lg.png"
+          src="/arshemart-mainlogo.png"
           alt="arshemart"
           width={150}
           height={50}
